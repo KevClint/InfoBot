@@ -1,8 +1,8 @@
 # AI Chatbot Web Application
 
-A professional, full-featured AI chatbot web application built with PHP, MySQL, and the Groq API. This project includes user authentication, chat conversations, and a knowledge base management system with full CRUD operations.
+A professional, full-featured AI chatbot web application built with PHP, MySQL, and the Groq API. This project includes user authentication, chat conversations, and a knowledge base management system with full CRUD operations. Note that this is also made with the help of AI, im using claude and Github Copilot. 
 
-Note that this is also made with the help of AI, im using claude and Github Copilot
+
 ---
 
 ## 📋 Table of Contents
@@ -288,8 +288,9 @@ This project is created for educational purposes. Feel free to use it for your s
 
 - **UI Icons**: Google Material Symbols
 - **Fonts**: Google Fonts (Poppins)
-- **AI Model**: Groq (Llama 3.1)
-- **Design Inspiration**: Modern chat applications
+- **AI Model - Using Groq**: Groq (Llama 3.1)
+- **Design Inspiration**: Modern chat applications like chatgpt
+- **Ai i used to make it**: Claude and Github Copilot
 
 ---
 
