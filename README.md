@@ -1,6 +1,7 @@
 # AI Chatbot Web Application
 
-A professional, full-featured AI chatbot web application built with PHP, MySQL, and the Groq API. This project includes user authentication, chat conversations, and a knowledge base management system with full CRUD operations.
+A professional, full-featured AI chatbot web application built with PHP, MySQL, and the Groq API. This project includes user authentication, chat conversations, and a knowledge base management system with full CRUD operations. Note that this is also made with the help of AI, im using claude and Github Copilot. 
+
 
 ---
 
@@ -133,41 +134,6 @@ A professional, full-featured AI chatbot web application built with PHP, MySQL, 
 
 ---
 
-## 📁 Project Structure
-
-```
-chatbot_project/
-│
-├── index.php                 # Main entry point (redirects to login/chat)
-│
-├── config/
-│   └── database.php          # Database connection & Groq API config
-│
-├── includes/
-│   ├── auth.php              # Authentication helper functions
-│   └── chatbot.php           # Chatbot API helper functions
-│
-├── pages/
-│   ├── login.php             # User login page
-│   ├── register.php          # User registration page
-│   ├── chat.php              # Main chat interface
-│   ├── manage.php            # Management dashboard (CRUD)
-│   ├── knowledge_form.php    # Add/Edit knowledge entries
-│   ├── knowledge_view.php    # View knowledge entry details
-│   └── logout.php            # Logout handler
-│
-├── api/
-│   ├── chat.php              # Handle chat messages to Groq API
-│   └── delete_conversation.php  # Delete conversation endpoint
-│
-├── assets/
-│   └── css/
-│       └── style.css         # Main stylesheet
-│
-└── database/
-    └── schema.sql            # Database schema with sample data
-```
-
 ---
 
 ## 🔧 How It Works
@@ -208,30 +174,6 @@ but remain professional. If you don't know something, admit
 it honestly. Keep your responses concise but informative. 
 Always be respectful and encouraging."
 ```
-
-### Database Structure
-
-**Users Table**
-- Stores user accounts
-- Passwords are hashed with bcrypt
-- Includes email and creation date
-
-**Conversations Table**
-- Each chat session is a conversation
-- Linked to user via foreign key
-- Tracks creation and update times
-
-**Messages Table**
-- Individual messages in conversations
-- Role: 'user' or 'assistant'
-- Includes timestamp
-
-**Knowledge Base Table**
-- Q&A pairs for reference
-- Organized by category
-- Tracks who created each entry
-
----
 
 ## 📖 Usage Guide
 
@@ -346,8 +288,9 @@ This project is created for educational purposes. Feel free to use it for your s
 
 - **UI Icons**: Google Material Symbols
 - **Fonts**: Google Fonts (Poppins)
-- **AI Model**: Groq (Llama 3.1)
-- **Design Inspiration**: Modern chat applications
+- **AI Model - Using Groq**: Groq (Llama 3.1)
+- **Design Inspiration**: Modern chat applications like chatgpt
+- **Ai i used to make it**: Claude and Github Copilot
 
 ---
 
