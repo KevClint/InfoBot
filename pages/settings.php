@@ -36,6 +36,7 @@ closeDatabaseConnection($conn);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - InfoBot</title>
     <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
+    <link rel="icon" href="<?php echo BASE_PATH; ?>assets/icons/logo-robot-64px.jpg">
 </head>
 <body>
     <!-- Header -->

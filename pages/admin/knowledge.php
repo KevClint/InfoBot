@@ -71,6 +71,7 @@ closeDatabaseConnection($conn);
     <title>Knowledge Base Management - InfoBot Admin</title>
     <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
     <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/admin.css">
+    <link rel="icon" href="<?php echo BASE_PATH; ?>assets/icons/logo-robot-64px.jpg">
 </head>
 <body>
     <!-- Header -->
