@@ -11,10 +11,10 @@ require_once __DIR__ . '/includes/auth.php';
 // Check if user is logged in
 if (isLoggedIn()) {
     // Redirect to chat
-    header('Location: /chatbot_project/pages/chat.php');
+    header('Location: /infobot/pages/chat.php');
 } else {
     // Redirect to login
-    header('Location: /chatbot_project/pages/login.php');
+    header('Location: /infobot/pages/login.php');
 }
 
 exit();

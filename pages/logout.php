@@ -12,6 +12,6 @@ require_once __DIR__ . '/../includes/auth.php';
 logoutUser();
 
 // Redirect to login page
-header('Location: /chatbot_project/pages/login.php');
+header('Location: /infobot/pages/login.php');
 exit();
 ?>

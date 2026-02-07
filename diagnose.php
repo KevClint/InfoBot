@@ -3,7 +3,7 @@
  * DATABASE DIAGNOSTIC & REPAIR SCRIPT
  * 
  * This script diagnoses database issues and creates/fixes the admin user
- * Access via: http://localhost/chatbot_project/diagnose.php
+ * Access via: http://localhost/infobot/diagnose.php
  */
 
 require_once __DIR__ . '/config/database.php';
@@ -152,14 +152,14 @@ try {
     echo "<div class='section'>";
     echo "<h3>✅ Summary & Next Steps</h3>";
     echo "<ol>";
-    echo "<li>Go to: <span class='code'>http://localhost/chatbot_project/pages/login.php</span></li>";
+    echo "<li>Go to: <span class='code'>http://localhost/infobot/pages/login.php</span></li>";
     echo "<li>Click on <strong>Admin Login</strong> tab</li>";
     echo "<li>Enter: <strong>admin</strong> / <strong>admin123</strong></li>";
     echo "<li>You should now be able to login to the admin panel</li>";
     echo "</ol>";
     echo "<p style='margin-top: 15px;'>";
-    echo "<a href='/chatbot_project/pages/login.php' class='button'>Go to Login</a> ";
-    echo "<a href='/chatbot_project/pages/admin/index.php' class='button'>Go to Admin Panel</a>";
+    echo "<a href='/infobot/pages/login.php' class='button'>Go to Login</a> ";
+    echo "<a href='/infobot/pages/admin/index.php' class='button'>Go to Admin Panel</a>";
     echo "</p>";
     echo "</div>";
     

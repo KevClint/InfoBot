@@ -202,8 +202,8 @@ closeDatabaseConnection($conn);
         <?php endif; ?>
 
         <div class="action-buttons">
-            <a href="/chatbot_project/pages/login.php" class="btn btn-primary">Go to Login</a>
-            <a href="/chatbot_project/pages/admin/index.php" class="btn btn-secondary">Admin Dashboard</a>
+            <a href="/infobot/pages/login.php" class="btn btn-primary">Go to Login</a>
+            <a href="/infobot/pages/admin/index.php" class="btn btn-secondary">Admin Dashboard</a>
         </div>
     </div>
 </body>

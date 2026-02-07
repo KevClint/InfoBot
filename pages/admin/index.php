@@ -35,32 +35,32 @@ closeDatabaseConnection($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - InfoBot</title>
-    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
-    <link rel="stylesheet" href="/chatbot_project/assets/css/admin.css">
+    <link rel="stylesheet" href="/infobot/assets/css/style.css">
+    <link rel="stylesheet" href="/infobot/assets/css/admin.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/chatbot_project/pages/admin/index.php" class="logo">
+                <a href="/infobot/pages/admin/index.php" class="logo">
                     <span class="material-symbols-outlined">admin_panel_settings</span>
                     InfoBot Admin
                 </a>
                 <nav class="nav">
-                    <a href="/chatbot_project/pages/chat.php" class="nav-link">
+                    <a href="/infobot/pages/chat.php" class="nav-link">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
-                    <a href="/chatbot_project/pages/admin/knowledge.php" class="nav-link">
+                    <a href="/infobot/pages/admin/knowledge.php" class="nav-link">
                         <span class="material-symbols-outlined">school</span>
                         <span>Knowledge Base</span>
                     </a>
-                    <a href="/chatbot_project/pages/admin/index.php" class="nav-link active">
+                    <a href="/infobot/pages/admin/index.php" class="nav-link active">
                         <span class="material-symbols-outlined">dashboard</span>
                         <span>Dashboard</span>
                     </a>
-                    <a href="/chatbot_project/pages/logout.php" class="nav-link">
+                    <a href="/infobot/pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -123,15 +123,15 @@ closeDatabaseConnection($conn);
         <div class="admin-section">
             <h2>Quick Actions</h2>
             <div class="actions-grid">
-                <a href="/chatbot_project/pages/admin/knowledge.php" class="action-button">
+                <a href="/infobot/pages/admin/knowledge.php" class="action-button">
                     <span class="material-symbols-outlined">add</span>
                     Add Knowledge Entry
                 </a>
-                <a href="/chatbot_project/pages/admin/knowledge.php" class="action-button">
+                <a href="/infobot/pages/admin/knowledge.php" class="action-button">
                     <span class="material-symbols-outlined">edit</span>
                     Manage Knowledge Base
                 </a>
-                <a href="/chatbot_project/pages/chat.php" class="action-button">
+                <a href="/infobot/pages/chat.php" class="action-button">
                     <span class="material-symbols-outlined">chat</span>
                     Test Chatbot
                 </a>

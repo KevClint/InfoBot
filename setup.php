@@ -3,7 +3,7 @@
  * DATABASE SETUP SCRIPT
  * 
  * Run this script once to create missing tables and columns
- * Access via: http://localhost/chatbot_project/setup.php
+ * Access via: http://localhost/infobot/setup.php
  */
 
 require_once __DIR__ . '/config/database.php';
@@ -256,8 +256,8 @@ try {
                 <li>You can delete this setup.php file after verification</li>
             </ul>
             <div class="button-group">
-                <a href="/chatbot_project/pages/login.php" class="btn-primary">Go to Login</a>
-                <a href="/chatbot_project/pages/chat.php" class="btn-secondary">Go to Chat</a>
+                <a href="/infobot/pages/login.php" class="btn-primary">Go to Login</a>
+                <a href="/infobot/pages/chat.php" class="btn-secondary">Go to Chat</a>
             </div>
         </div>
     </div>

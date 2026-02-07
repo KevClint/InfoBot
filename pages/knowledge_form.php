@@ -33,7 +33,7 @@ if (isset($_GET['id'])) {
         $entry = $result->fetch_assoc();
         $editing = true;
     } else {
-        header('Location: /chatbot_project/pages/manage.php');
+        header('Location: /infobot/pages/manage.php');
         exit();
     }
     
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $stmt->close();
                 closeDatabaseConnection($conn);
-                header('Location: /chatbot_project/pages/manage.php?success=knowledge_updated');
+                header('Location: /infobot/pages/manage.php?success=knowledge_updated');
                 exit();
             } else {
                 $error = 'Failed to update entry.';
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $stmt->close();
                 closeDatabaseConnection($conn);
-                header('Location: /chatbot_project/pages/manage.php?success=knowledge_added');
+                header('Location: /infobot/pages/manage.php?success=knowledge_added');
                 exit();
             } else {
                 $error = 'Failed to create entry.';
@@ -93,27 +93,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $editing ? 'Edit' : 'Add'; ?> Knowledge Entry - AI Chatbot</title>
-    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
+    <link rel="stylesheet" href="/infobot/assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/chatbot_project/pages/chat.php" class="logo">
+                <a href="/infobot/pages/chat.php" class="logo">
                     <span class="material-symbols-outlined">smart_toy</span>
                     AI Chatbot
                 </a>
                 <nav class="nav">
-                    <a href="/chatbot_project/pages/chat.php" class="nav-link">
+                    <a href="/infobot/pages/chat.php" class="nav-link">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
-                    <a href="/chatbot_project/pages/manage.php" class="nav-link active">
+                    <a href="/infobot/pages/manage.php" class="nav-link active">
                         <span class="material-symbols-outlined">dashboard</span>
                         <span>Manage</span>
                     </a>
-                    <a href="/chatbot_project/pages/logout.php" class="nav-link">
+                    <a href="/infobot/pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">
-                <a href="/chatbot_project/pages/manage.php" style="color: inherit; text-decoration: none;">
+                <a href="/infobot/pages/manage.php" style="color: inherit; text-decoration: none;">
                     <span class="material-symbols-outlined" style="vertical-align: middle;">arrow_back</span>
                 </a>
                 <?php echo $editing ? 'Edit' : 'Add New'; ?> Knowledge Entry
@@ -187,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                    <a href="/chatbot_project/pages/manage.php" class="btn btn-secondary">
+                    <a href="/infobot/pages/manage.php" class="btn btn-secondary">
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-primary">

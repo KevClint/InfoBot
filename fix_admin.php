@@ -3,7 +3,7 @@
  * QUICK FIX: Set Admin Role
  * 
  * This script fixes the admin user's role
- * Access via: http://localhost/chatbot_project/fix_admin.php
+ * Access via: http://localhost/infobot/fix_admin.php
  */
 
 require_once __DIR__ . '/config/database.php';
@@ -96,7 +96,7 @@ try {
         echo "Password: <span class='code'>admin123</span>";
         echo "</p>";
         echo "<p style='margin-top: 20px;'>";
-        echo "<a href='/chatbot_project/pages/login.php' class='button'>Go to Login →</a>";
+        echo "<a href='/infobot/pages/login.php' class='button'>Go to Login →</a>";
         echo "</p>";
     }
     
