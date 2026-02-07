@@ -1,0 +1,203 @@
+================================================================================
+AI CHATBOT WEB APPLICATION - QUICK SETUP GUIDE
+================================================================================
+
+📋 BEFORE YOU START
+-------------------
+Make sure you have:
+✓ XAMPP installed (Apache + MySQL)
+✓ A Groq API key (free from https://console.groq.com/)
+✓ Basic understanding of how to use XAMPP
+
+
+🚀 STEP-BY-STEP INSTALLATION
+----------------------------
+
+STEP 1: COPY PROJECT FILES
+--------------------------
+1. Copy the entire "chatbot_project" folder
+2. Paste it into your XAMPP's htdocs folder:
+   
+   Windows:   C:\xampp\htdocs\chatbot_project\
+   Mac:       /Applications/XAMPP/htdocs/chatbot_project/
+   Linux:     /opt/lampp/htdocs/chatbot_project/
+
+
+STEP 2: START XAMPP SERVICES
+----------------------------
+1. Open XAMPP Control Panel
+2. Click "Start" for Apache
+3. Click "Start" for MySQL
+4. Wait until both show "Running" status
+
+
+STEP 3: CREATE DATABASE
+-----------------------
+1. Open browser and go to: http://localhost/phpmyadmin
+2. Click "New" on left sidebar
+3. Enter database name: ai_chatbot_db
+4. Select collation: utf8mb4_general_ci
+5. Click "Create"
+
+
+STEP 4: IMPORT DATABASE SCHEMA
+------------------------------
+1. Click on "ai_chatbot_db" database (left sidebar)
+2. Click "SQL" tab at the top
+3. Open the file: database/schema.sql (use Notepad or any text editor)
+4. Copy ALL the SQL code from the file
+5. Paste it into the SQL box in phpMyAdmin
+6. Click "Go" button
+7. You should see "4 tables created" and "4 rows inserted" messages
+
+
+STEP 5: GET YOUR GROQ API KEY
+-----------------------------
+1. Visit: https://console.groq.com/
+2. Sign up for a free account
+3. Verify your email
+4. Click "API Keys" in the dashboard
+5. Click "Create API Key"
+6. Give it a name (e.g., "My Chatbot")
+7. Click "Create"
+8. Copy the API key (it starts with "gsk_")
+   ⚠️ IMPORTANT: Save this key somewhere safe!
+
+
+STEP 6: CONFIGURE API KEY
+-------------------------
+1. Open the file: config/database.php
+2. Find this line:
+   define('GROQ_API_KEY', 'YOUR_GROQ_API_KEY_HERE');
+3. Replace YOUR_GROQ_API_KEY_HERE with your actual API key
+4. Example:
+   define('GROQ_API_KEY', 'gsk_abc123xyz456...');
+5. Save the file
+
+
+STEP 7: TEST THE APPLICATION
+----------------------------
+1. Open your browser
+2. Go to: http://localhost/chatbot_project/
+3. You should see the login page
+
+Default Admin Login:
+   Username: admin
+   Password: admin123
+
+
+🎉 YOU'RE DONE!
+---------------
+You can now:
+✓ Login with admin account
+✓ Or create a new account
+✓ Start chatting with AI
+✓ Manage conversations
+✓ Add knowledge base entries
+
+
+📁 PROJECT STRUCTURE
+--------------------
+chatbot_project/
+├── index.php              # Main entry point
+├── config/
+│   └── database.php       # Database & API configuration
+├── includes/
+│   ├── auth.php           # Authentication functions
+│   └── chatbot.php        # Chatbot functions
+├── pages/
+│   ├── login.php          # Login page
+│   ├── register.php       # Registration page
+│   ├── chat.php           # Chat interface
+│   ├── manage.php         # Management dashboard
+│   ├── knowledge_form.php # Add/Edit knowledge
+│   └── knowledge_view.php # View knowledge details
+├── api/
+│   ├── chat.php           # Chat API endpoint
+│   └── delete_conversation.php
+├── assets/
+│   └── css/
+│       └── style.css      # Styling
+└── database/
+    └── schema.sql         # Database schema
+
+
+🐛 COMMON PROBLEMS & SOLUTIONS
+-------------------------------
+
+Problem: Can't access localhost
+Solution: Make sure Apache is running in XAMPP
+
+Problem: Database connection failed
+Solution: 
+  - Check MySQL is running in XAMPP
+  - Verify database name is "ai_chatbot_db"
+  - Check username is "root" and password is empty
+
+Problem: API error when chatting
+Solution:
+  - Check your Groq API key is correct
+  - Make sure you have internet connection
+  - Verify the key in config/database.php
+
+Problem: Page shows errors
+Solution:
+  - Make sure all files are in htdocs/chatbot_project/
+  - Check PHP version (needs 7.4+)
+  - Look at XAMPP error logs for details
+
+Problem: Can't login
+Solution:
+  - Clear browser cookies
+  - Try creating a new account
+  - Check if database was imported correctly
+
+
+💡 TIPS FOR SUCCESS
+-------------------
+1. Always start Apache and MySQL before using the app
+2. Don't share your Groq API key with anyone
+3. Change the admin password after first login
+4. Read the README.md file for detailed information
+5. Check code comments to understand how it works
+
+
+🎓 FOR STUDENTS
+---------------
+This project demonstrates:
+✓ User authentication with PHP sessions
+✓ Password hashing with bcrypt
+✓ CRUD operations (Create, Read, Update, Delete)
+✓ API integration (Groq AI)
+✓ SQL prepared statements (prevents SQL injection)
+✓ Modern responsive UI design
+✓ AJAX for dynamic content
+✓ Session management
+✓ Input validation and sanitization
+
+
+📧 NEED MORE HELP?
+------------------
+1. Read the full README.md file
+2. Check the troubleshooting section
+3. Review code comments for explanations
+4. Look at XAMPP error logs:
+   Windows: C:\xampp\apache\logs\error.log
+   Mac: /Applications/XAMPP/logs/error_log
+   Linux: /opt/lampp/logs/error_log
+
+
+🎯 WHAT TO DO NEXT
+------------------
+After setup:
+1. Login with admin account
+2. Change the admin password
+3. Create a test conversation
+4. Try adding knowledge base entries
+5. Test all CRUD operations
+6. Explore the management dashboard
+
+
+================================================================================
+Good luck with your project! 🚀
+================================================================================

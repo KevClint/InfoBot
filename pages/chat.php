@@ -1,0 +1,342 @@
+<?php
+/**
+ * CHAT PAGE
+ * 
+ * Main chat interface where users interact with the AI chatbot.
+ * Displays conversation history and allows sending new messages.
+ */
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/chatbot.php';
+require_once __DIR__ . '/../includes/preferences.php';
+
+// Require user to be logged in
+requireLogin();
+
+$user_id = getCurrentUserId();
+$username = getCurrentUsername();
+$user_role = getCurrentUserRole();
+$prefs = getUserPreferences($user_id);
+
+// Get user's conversations
+$conversations = getUserConversations($user_id);
+
+// Get current conversation ID (from URL or create new)
+$current_conversation_id = isset($_GET['conversation_id']) ? intval($_GET['conversation_id']) : null;
+
+// If no conversation specified, create a new one
+if (!$current_conversation_id) {
+    $current_conversation_id = createConversation($user_id);
+    header('Location: /chatbot_project/pages/chat.php?conversation_id=' . $current_conversation_id);
+    exit();
+}
+
+// Get messages for current conversation
+$messages = getConversationMessages($current_conversation_id);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfoBot - Chat</title>
+    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/chatbot_project/pages/chat.php" class="logo">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    InfoBot
+                </a>
+                <nav class="nav">
+                    <a href="/chatbot_project/pages/chat.php" class="nav-link active">
+                        <span class="material-symbols-outlined">chat</span>
+                        <span>Chat</span>
+                    </a>
+                    <?php if ($user_role === 'admin'): ?>
+                        <a href="/chatbot_project/pages/admin/index.php" class="nav-link">
+                            <span class="material-symbols-outlined">admin_panel_settings</span>
+                            <span>Admin</span>
+                        </a>
+                    <?php endif; ?>
+                    <a href="/chatbot_project/pages/settings.php" class="nav-link">
+                        <span class="material-symbols-outlined">settings</span>
+                        <span>Settings</span>
+                    </a>
+                    <a href="/chatbot_project/pages/logout.php" class="nav-link">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <aside class="chat-sidebar">
+            <div class="sidebar-header">
+                <button class="btn btn-primary" style="width: 100%;" onclick="newConversation()">
+                    <span class="material-symbols-outlined">add</span>
+                    New Chat
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <?php if (empty($conversations)): ?>
+                    <p class="text-muted" style="font-size: 14px; padding: 12px;">No conversations yet. Start a new chat!</p>
+                <?php else: ?>
+                    <?php foreach ($conversations as $conv): ?>
+                        <div class="conversation-item <?php echo $conv['id'] == $current_conversation_id ? 'active' : ''; ?>" 
+                             onclick="loadConversation(<?php echo $conv['id']; ?>)">
+                            <div>
+                                <div class="conversation-title"><?php echo htmlspecialchars($conv['title']); ?></div>
+                                <div class="conversation-date"><?php echo date('M j, g:i A', strtotime($conv['updated_at'])); ?></div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-main">
+            <div class="chat-header">
+                <h2 class="chat-title">AI Assistant</h2>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="searchInput" class="chat-search" placeholder="Search messages..." 
+                           style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); width: 200px;">
+                    <button class="btn btn-icon btn-secondary" onclick="clearChat()" title="Delete chat">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <?php if (empty($messages)): ?>
+                    <div class="empty-state">
+                        <span class="material-symbols-outlined">chat_bubble_outline</span>
+                        <p>Start a conversation with the AI assistant!</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($messages as $msg): ?>
+                        <div class="message <?php echo $msg['role']; ?>" data-message-id="<?php echo isset($msg['id']) ? $msg['id'] : ''; ?>">
+                            <div class="message-avatar">
+                                <span class="material-symbols-outlined">
+                                    <?php echo $msg['role'] === 'user' ? 'person' : 'smart_toy'; ?>
+                                </span>
+                            </div>
+                            <div>
+                                <div class="message-content">
+                                    <?php echo nl2br(htmlspecialchars($msg['content'])); ?>
+                                </div>
+                                <div class="message-time">
+                                    <?php echo date('g:i A', strtotime($msg['created_at'])); ?>
+                                    <?php if ($msg['role'] === 'assistant'): ?>
+                                        <button class="favorite-btn" onclick="toggleFavorite(this)" title="Add to favorites">
+                                            <span class="material-symbols-outlined">favorite</span>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <div class="chat-input-container">
+                <form class="chat-input-wrapper" onsubmit="sendMessage(event)">
+                    <textarea 
+                        id="messageInput" 
+                        class="chat-input" 
+                        placeholder="Type your message here..."
+                        rows="1"
+                        required
+                    ></textarea>
+                    <button type="submit" class="send-button" id="sendButton">
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const conversationId = <?php echo $current_conversation_id; ?>;
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        // Fix logo link to not create new conversation when clicked
+        document.querySelector('.logo').href = '/chatbot_project/pages/chat.php?conversation_id=' + conversationId;
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Handle Enter key (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(e);
+            }
+        });
+
+        // Send message function
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Disable input while sending
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+
+            // Add user message to chat
+            addMessage('user', message);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Show typing indicator
+            const typingDiv = showTypingIndicator();
+
+            try {
+                // Send message to API
+                const response = await fetch('/chatbot_project/api/chat.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: conversationId,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                // Remove typing indicator
+                typingDiv.remove();
+
+                if (data.success) {
+                    // Add bot response to chat
+                    addMessage('bot', data.message);
+                } else {
+                    // Show error
+                    addMessage('bot', 'Sorry, I encountered an error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                typingDiv.remove();
+                addMessage('bot', 'Sorry, I couldn\'t connect to the server. Please try again.');
+                console.error('Error:', error);
+            }
+
+            // Re-enable input
+            messageInput.disabled = false;
+            sendButton.disabled = false;
+            messageInput.focus();
+        }
+
+        // Add message to chat display
+        function addMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + role;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <span class="material-symbols-outlined">
+                        ${role === 'user' ? 'person' : 'smart_toy'}
+                    </span>
+                </div>
+                <div>
+                    <div class="message-content">${escapeHtml(content).replace(/\n/g, '<br>')}</div>
+                    <div class="message-time">${timeString}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="message-avatar">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                </div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return typingDiv;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load conversation
+        function loadConversation(convId) {
+            window.location.href = '/chatbot_project/pages/chat.php?conversation_id=' + convId;
+        }
+
+        // New conversation
+        function newConversation() {
+            const btn = event.target.closest('button');
+            if (btn) btn.disabled = true;
+            window.location.href = '/chatbot_project/pages/chat.php';
+        }
+
+        // Clear current chat
+        function clearChat() {
+            if (confirm('Are you sure you want to delete this conversation?')) {
+                fetch('/chatbot_project/api/delete_conversation.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: conversationId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/chatbot_project/pages/chat.php';
+                    } else {
+                        alert('Error deleting conversation');
+                    }
+                });
+            }
+        }
+
+        // Auto-scroll to bottom on load
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    </script>
+</body>
+</html>
