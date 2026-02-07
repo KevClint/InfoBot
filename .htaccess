@@ -6,7 +6,7 @@
 RewriteEngine On
 
 # Set base directory
-RewriteBase /infobot/
+RewriteBase /chatbot_project/
 
 # Redirect to index.php if accessing root
 DirectoryIndex index.php
@@ -63,8 +63,8 @@ AddDefaultCharset UTF-8
 </IfModule>
 
 # Custom error pages (optional)
-# ErrorDocument 404 /infobot/pages/404.php
-# ErrorDocument 500 /infobot/pages/500.php
+# ErrorDocument 404 /chatbot_project/pages/404.php
+# ErrorDocument 500 /chatbot_project/pages/500.php
 
 # PHP settings (if allowed)
 <IfModule mod_php7.c>

@@ -61,7 +61,7 @@ function isAdmin() {
  */
 function requireAdmin() {
     if (!isLoggedIn() || !isAdmin()) {
-        header('Location: /infobot/pages/chat.php');
+        header('Location: /chatbot_project/pages/chat.php');
         exit();
     }
 }
@@ -74,7 +74,7 @@ function requireAdmin() {
 function requireLogin($redirect_to = '') {
     if (!isLoggedIn()) {
         $redirect = $redirect_to ? '?redirect=' . urlencode($redirect_to) : '';
-        header('Location: /infobot/pages/login.php' . $redirect);
+        header('Location: /chatbot_project/pages/login.php' . $redirect);
         exit();
     }
 }

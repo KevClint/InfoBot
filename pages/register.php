@@ -11,7 +11,7 @@ require_once __DIR__ . '/../includes/auth.php';
 
 // If already logged in, redirect to chat
 if (isLoggedIn()) {
-    header('Location: /infobot/pages/chat.php');
+    header('Location: /chatbot_project/pages/chat.php');
     exit();
 }
 
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($stmt->execute()) {
                     $success = 'Registration successful! Redirecting to login...';
                     // Redirect after 2 seconds
-                    header("refresh:2;url=/infobot/pages/login.php");
+                    header("refresh:2;url=/chatbot_project/pages/login.php");
                 } else {
                     $error = 'Registration failed. Please try again.';
                 }
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - AI Chatbot</title>
-    <link rel="stylesheet" href="/infobot/assets/css/style.css">
+    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
 </head>
 <body>
     <div class="auth-container">
@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
 
             <div class="auth-footer">
-                Already have an account? <a href="/infobot/pages/login.php">Sign in</a>
+                Already have an account? <a href="/chatbot_project/pages/login.php">Sign in</a>
             </div>
         </div>
     </div>

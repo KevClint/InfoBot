@@ -4,6 +4,7 @@
  * 
  * Main chat interface where users interact with the AI chatbot.
  * Displays conversation history and allows sending new messages.
+ * Features: favorites, search, dark mode, theme colors, font size.
  */
 
 require_once __DIR__ . '/../config/database.php';
@@ -28,7 +29,7 @@ $current_conversation_id = isset($_GET['conversation_id']) ? intval($_GET['conve
 // If no conversation specified, create a new one
 if (!$current_conversation_id) {
     $current_conversation_id = createConversation($user_id);
-    header('Location: /infobot/pages/chat.php?conversation_id=' . $current_conversation_id);
+    header('Location: /chatbot_project/pages/chat.php?conversation_id=' . $current_conversation_id);
     exit();
 }
 
@@ -41,33 +42,33 @@ $messages = getConversationMessages($current_conversation_id);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InfoBot - Chat</title>
-    <link rel="stylesheet" href="/infobot/assets/css/style.css">
+    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/infobot/pages/chat.php" class="logo">
+                <a href="/chatbot_project/pages/chat.php" class="logo">
                     <span class="material-symbols-outlined">smart_toy</span>
                     InfoBot
                 </a>
                 <nav class="nav">
-                    <a href="/infobot/pages/chat.php" class="nav-link active">
+                    <a href="/chatbot_project/pages/chat.php" class="nav-link active">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
                     <?php if ($user_role === 'admin'): ?>
-                        <a href="/infobot/pages/admin/index.php" class="nav-link">
+                        <a href="/chatbot_project/pages/admin/index.php" class="nav-link">
                             <span class="material-symbols-outlined">admin_panel_settings</span>
                             <span>Admin</span>
                         </a>
                     <?php endif; ?>
-                    <a href="/infobot/pages/settings.php" class="nav-link">
+                    <a href="/chatbot_project/pages/settings.php" class="nav-link">
                         <span class="material-symbols-outlined">settings</span>
                         <span>Settings</span>
                     </a>
-                    <a href="/infobot/pages/logout.php" class="nav-link">
+                    <a href="/chatbot_project/pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -134,11 +135,11 @@ $messages = getConversationMessages($current_conversation_id);
                                 <div class="message-content">
                                     <?php echo nl2br(htmlspecialchars($msg['content'])); ?>
                                 </div>
-                                <div class="message-time">
+                                <div class="message-time" style="display: flex; align-items: center; gap: 4px;">
                                     <?php echo date('g:i A', strtotime($msg['created_at'])); ?>
                                     <?php if ($msg['role'] === 'assistant'): ?>
-                                        <button class="favorite-btn" onclick="toggleFavorite(this)" title="Add to favorites">
-                                            <span class="material-symbols-outlined">favorite</span>
+                                        <button class="favorite-btn" onclick="toggleFavorite(this)" title="Add to favorites" style="background: none; border: none; cursor: pointer; padding: 0 4px; color: inherit; font-size: 16px;">
+                                            <span class="material-symbols-outlined" style="font-size: 18px;">favorite</span>
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -170,9 +171,122 @@ $messages = getConversationMessages($current_conversation_id);
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
+        const searchInput = document.getElementById('searchInput');
+
+        // Initialize theme on page load
+        function initializeTheme() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const fontSize = localStorage.getItem('fontSize') || 'medium';
+            const themeColor = localStorage.getItem('themeColor') || 'blue';
+            applyTheme(darkMode, fontSize, themeColor);
+        }
+
+        // Apply theme
+        function applyTheme(darkMode, fontSize, themeColor) {
+            const root = document.documentElement;
+            
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+
+            root.style.setProperty('--font-size-multiplier', 
+                fontSize === 'small' ? '0.9' : fontSize === 'large' ? '1.1' : '1');
+
+            const colorMap = {
+                'blue': '#3b82f6',
+                'green': '#10b981',
+                'purple': '#8b5cf6',
+                'orange': '#f97316',
+                'cyan': '#06b6d4'
+            };
+            root.style.setProperty('--color-primary', colorMap[themeColor]);
+        }
+
+        // Show welcome modal on first visit
+        function showWelcomeModal() {
+            const hasVisited = sessionStorage.getItem('visited');
+            if (!hasVisited) {
+                const modalHTML = `
+                    <div id="welcomeModal" class="modal-overlay" onclick="closeWelcomeModal(event)">
+                        <div class="modal" style="display: block; margin: auto;" onclick="event.stopPropagation()">
+                            <div class="modal-header">
+                                <h2>Welcome to InfoBot!</h2>
+                                <button class="close-button" onclick="closeWelcomeModal()">×</button>
+                            </div>
+                            <div class="modal-body" style="text-align: center;">
+                                <div style="font-size: 48px; margin-bottom: 16px;">
+                                    <span class="material-symbols-outlined" style="font-size: 48px;">smart_toy</span>
+                                </div>
+                                <h3 style="margin-bottom: 12px;">Hello! How can I help you today?</h3>
+                                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                                    I'm your AI assistant. You can ask me questions, get information, or have a conversation. 
+                                    Don't hesitate to reach out!
+                                </p>
+                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                    <button class="btn btn-primary" onclick="closeWelcomeModal()">Get Started</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                sessionStorage.setItem('visited', 'true');
+            }
+        }
+
+        function closeWelcomeModal(event) {
+            if (event && event.target.id !== 'welcomeModal') return;
+            const modal = document.getElementById('welcomeModal');
+            if (modal) modal.remove();
+        }
+
+        // Toggle favorite response
+        function toggleFavorite(btn) {
+            const messageEl = btn.closest('.message');
+            const messageId = messageEl.dataset.messageId;
+            
+            fetch('/chatbot_project/api/toggle_favorite.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message_id: messageId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    btn.classList.toggle('favorited');
+                    if (data.action === 'added') {
+                        btn.style.color = 'var(--danger-color)';
+                    } else {
+                        btn.style.color = 'inherit';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Search messages in current conversation
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            const messages = chatMessages.querySelectorAll('.message');
+            
+            messages.forEach(msg => {
+                const content = msg.textContent.toLowerCase();
+                if (query === '' || content.includes(query)) {
+                    msg.style.display = 'flex';
+                } else {
+                    msg.style.display = 'none';
+                }
+            });
+        });
 
         // Fix logo link to not create new conversation when clicked
-        document.querySelector('.logo').href = '/infobot/pages/chat.php?conversation_id=' + conversationId;
+        document.querySelector('.logo').href = '/chatbot_project/pages/chat.php?conversation_id=' + conversationId;
 
         // Auto-resize textarea
         messageInput.addEventListener('input', function() {
@@ -209,7 +323,7 @@ $messages = getConversationMessages($current_conversation_id);
 
             try {
                 // Send message to API
-                const response = await fetch('/infobot/api/chat.php', {
+                const response = await fetch('/chatbot_project/api/chat.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -252,6 +366,15 @@ $messages = getConversationMessages($current_conversation_id);
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
             
+            let favoriteBtn = '';
+            if (role === 'bot') {
+                favoriteBtn = `
+                    <button class="favorite-btn" onclick="toggleFavorite(this)" title="Add to favorites" style="background: none; border: none; cursor: pointer; padding: 0 4px; color: inherit; font-size: 16px;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">favorite</span>
+                    </button>
+                `;
+            }
+            
             messageDiv.innerHTML = `
                 <div class="message-avatar">
                     <span class="material-symbols-outlined">
@@ -260,7 +383,7 @@ $messages = getConversationMessages($current_conversation_id);
                 </div>
                 <div>
                     <div class="message-content">${escapeHtml(content).replace(/\n/g, '<br>')}</div>
-                    <div class="message-time">${timeString}</div>
+                    <div class="message-time" style="display: flex; align-items: center; gap: 4px;">${timeString}${favoriteBtn}</div>
                 </div>
             `;
             
@@ -302,20 +425,20 @@ $messages = getConversationMessages($current_conversation_id);
 
         // Load conversation
         function loadConversation(convId) {
-            window.location.href = '/infobot/pages/chat.php?conversation_id=' + convId;
+            window.location.href = '/chatbot_project/pages/chat.php?conversation_id=' + convId;
         }
 
         // New conversation
         function newConversation() {
             const btn = event.target.closest('button');
             if (btn) btn.disabled = true;
-            window.location.href = '/infobot/pages/chat.php';
+            window.location.href = '/chatbot_project/pages/chat.php';
         }
 
         // Clear current chat
         function clearChat() {
             if (confirm('Are you sure you want to delete this conversation?')) {
-                fetch('/infobot/api/delete_conversation.php', {
+                fetch('/chatbot_project/api/delete_conversation.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -327,13 +450,17 @@ $messages = getConversationMessages($current_conversation_id);
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.href = '/infobot/pages/chat.php';
+                        window.location.href = '/chatbot_project/pages/chat.php';
                     } else {
                         alert('Error deleting conversation');
                     }
                 });
             }
         }
+
+        // Initialize on page load
+        initializeTheme();
+        showWelcomeModal();
 
         // Auto-scroll to bottom on load
         chatMessages.scrollTop = chatMessages.scrollHeight;

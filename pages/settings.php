@@ -15,6 +15,15 @@ requireLogin();
 $user_id = getCurrentUserId();
 $username = getCurrentUsername();
 $prefs = getUserPreferences($user_id);
+
+// Get user's conversations
+$conn = getDatabaseConnection();
+$conversations = [];
+$result = $conn->query("SELECT id, title, created_at FROM conversations WHERE user_id = $user_id ORDER BY created_at DESC");
+while ($row = $result->fetch_assoc()) {
+    $conversations[] = $row;
+}
+closeDatabaseConnection($conn);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,27 +31,27 @@ $prefs = getUserPreferences($user_id);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - InfoBot</title>
-    <link rel="stylesheet" href="/infobot/assets/css/style.css">
+    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/infobot/pages/chat.php" class="logo">
+                <a href="/chatbot_project/pages/chat.php" class="logo">
                     <span class="material-symbols-outlined">smart_toy</span>
                     InfoBot
                 </a>
                 <nav class="nav">
-                    <a href="/infobot/pages/chat.php" class="nav-link">
+                    <a href="/chatbot_project/pages/chat.php" class="nav-link">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
-                    <a href="/infobot/pages/settings.php" class="nav-link active">
+                    <a href="/chatbot_project/pages/settings.php" class="nav-link active">
                         <span class="material-symbols-outlined">settings</span>
                         <span>Settings</span>
                     </a>
-                    <a href="/infobot/pages/logout.php" class="nav-link">
+                    <a href="/chatbot_project/pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -137,6 +146,25 @@ $prefs = getUserPreferences($user_id);
                     </div>
                 </div>
             </div>
+
+            <!-- Data & Privacy -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3>Data & Privacy</h3>
+                </div>
+                <div class="settings-card-body">
+                    <div class="settings-item">
+                        <div class="settings-label">
+                            <label>Delete Message History</label>
+                            <p class="settings-description">Permanently delete all conversations and messages</p>
+                        </div>
+                        <button class="btn btn-danger" onclick="deleteAllHistory()">
+                            <span class="material-symbols-outlined">delete_forever</span>
+                            Delete History
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Save Confirmation -->
@@ -209,7 +237,7 @@ $prefs = getUserPreferences($user_id);
 
         // Save preferences to server
         function savePreferences(darkMode, fontSize, themeColor) {
-            fetch('/infobot/api/save_preferences.php', {
+            fetch('/chatbot_project/api/save_preferences.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -236,6 +264,38 @@ $prefs = getUserPreferences($user_id);
             setTimeout(() => {
                 confirmation.style.display = 'none';
             }, 3000);
+        }
+
+        // Delete all message history
+        function deleteAllHistory() {
+            if (!confirm('Are you sure you want to delete ALL conversations and messages? This action cannot be undone.')) {
+                return;
+            }
+
+            if (!confirm('This is your final warning. All data will be permanently deleted. Continue?')) {
+                return;
+            }
+
+            fetch('/chatbot_project/api/delete_all_conversations.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('All conversations and messages have been deleted.');
+                    window.location.href = '/chatbot_project/pages/chat.php';
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete history'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting history.');
+            });
         }
 
         // Initialize on page load

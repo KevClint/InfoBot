@@ -1,7 +1,7 @@
 # 📁 COMPLETE PROJECT FOLDER STRUCTURE
 
 ```
-infobot/
+chatbot_project/
 │
 ├── 📄 index.php                          # Main entry point - redirects to login or chat
 ├── 📄 .htaccess                          # Apache configuration for security & performance
