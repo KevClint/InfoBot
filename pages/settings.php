@@ -22,27 +22,27 @@ $prefs = getUserPreferences($user_id);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - InfoBot</title>
-    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
+    <link rel="stylesheet" href="/infobot/assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/chatbot_project/pages/chat.php" class="logo">
+                <a href="/infobot/pages/chat.php" class="logo">
                     <span class="material-symbols-outlined">smart_toy</span>
                     InfoBot
                 </a>
                 <nav class="nav">
-                    <a href="/chatbot_project/pages/chat.php" class="nav-link">
+                    <a href="/infobot/pages/chat.php" class="nav-link">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
-                    <a href="/chatbot_project/pages/settings.php" class="nav-link active">
+                    <a href="/infobot/pages/settings.php" class="nav-link active">
                         <span class="material-symbols-outlined">settings</span>
                         <span>Settings</span>
                     </a>
-                    <a href="/chatbot_project/pages/logout.php" class="nav-link">
+                    <a href="/infobot/pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -209,7 +209,7 @@ $prefs = getUserPreferences($user_id);
 
         // Save preferences to server
         function savePreferences(darkMode, fontSize, themeColor) {
-            fetch('/chatbot_project/api/save_preferences.php', {
+            fetch('/infobot/api/save_preferences.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

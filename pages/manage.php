@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt->bind_param("ii", $conv_id, $user_id);
         $stmt->execute();
         $stmt->close();
-        header('Location: /chatbot_project/pages/manage.php?success=conversation_deleted');
+        header('Location: /infobot/pages/manage.php?success=conversation_deleted');
         exit();
     }
     
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt->bind_param("ii", $kb_id, $user_id);
         $stmt->execute();
         $stmt->close();
-        header('Location: /chatbot_project/pages/manage.php?success=knowledge_deleted');
+        header('Location: /infobot/pages/manage.php?success=knowledge_deleted');
         exit();
     }
     
@@ -97,27 +97,27 @@ if (isset($_GET['success'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage - AI Chatbot</title>
-    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
+    <link rel="stylesheet" href="/infobot/assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/chatbot_project/pages/chat.php" class="logo">
+                <a href="/infobot/pages/chat.php" class="logo">
                     <span class="material-symbols-outlined">smart_toy</span>
                     AI Chatbot
                 </a>
                 <nav class="nav">
-                    <a href="/chatbot_project/pages/chat.php" class="nav-link">
+                    <a href="/infobot/pages/chat.php" class="nav-link">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
-                    <a href="/chatbot_project/pages/manage.php" class="nav-link active">
+                    <a href="/infobot/pages/manage.php" class="nav-link active">
                         <span class="material-symbols-outlined">dashboard</span>
                         <span>Manage</span>
                     </a>
-                    <a href="/chatbot_project/pages/logout.php" class="nav-link">
+                    <a href="/infobot/pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -144,7 +144,7 @@ if (isset($_GET['success'])) {
         <div class="card mb-4">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h2 style="font-size: 20px; font-weight: 600;">My Conversations</h2>
-                <a href="/chatbot_project/pages/chat.php" class="btn btn-primary btn-sm">
+                <a href="/infobot/pages/chat.php" class="btn btn-primary btn-sm">
                     <span class="material-symbols-outlined">add</span>
                     New Chat
                 </a>
@@ -177,7 +177,7 @@ if (isset($_GET['success'])) {
                                 <td><?php echo date('M j, Y g:i A', strtotime($conv['updated_at'])); ?></td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a href="/chatbot_project/pages/chat.php?conversation_id=<?php echo $conv['id']; ?>" 
+                                        <a href="/infobot/pages/chat.php?conversation_id=<?php echo $conv['id']; ?>" 
                                            class="btn btn-sm btn-secondary" 
                                            title="View">
                                             <span class="material-symbols-outlined">visibility</span>
@@ -203,7 +203,7 @@ if (isset($_GET['success'])) {
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h2 style="font-size: 20px; font-weight: 600;">Knowledge Base</h2>
-                <a href="/chatbot_project/pages/knowledge_form.php" class="btn btn-primary btn-sm">
+                <a href="/infobot/pages/knowledge_form.php" class="btn btn-primary btn-sm">
                     <span class="material-symbols-outlined">add</span>
                     Add Entry
                 </a>
@@ -240,13 +240,13 @@ if (isset($_GET['success'])) {
                                 <td><?php echo date('M j, Y', strtotime($kb['created_at'])); ?></td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a href="/chatbot_project/pages/knowledge_view.php?id=<?php echo $kb['id']; ?>" 
+                                        <a href="/infobot/pages/knowledge_view.php?id=<?php echo $kb['id']; ?>" 
                                            class="btn btn-sm btn-secondary" 
                                            title="View">
                                             <span class="material-symbols-outlined">visibility</span>
                                         </a>
                                         <?php if ($kb['created_by'] == $user_id): ?>
-                                            <a href="/chatbot_project/pages/knowledge_form.php?id=<?php echo $kb['id']; ?>" 
+                                            <a href="/infobot/pages/knowledge_form.php?id=<?php echo $kb['id']; ?>" 
                                                class="btn btn-sm btn-secondary" 
                                                title="Edit">
                                                 <span class="material-symbols-outlined">edit</span>

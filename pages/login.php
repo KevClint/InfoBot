@@ -11,7 +11,7 @@ require_once __DIR__ . '/../includes/auth.php';
 
 // If already logged in, redirect to chat
 if (isLoggedIn()) {
-    header('Location: /chatbot_project/pages/chat.php');
+    header('Location: /infobot/pages/chat.php');
     exit();
 }
 
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 loginUser($user['id'], $user['username']);
                 
                 // Redirect to chat or specified page
-                $redirect = $_GET['redirect'] ?? '/chatbot_project/pages/chat.php';
+                $redirect = $_GET['redirect'] ?? '/infobot/pages/chat.php';
                 header('Location: ' . $redirect);
                 exit();
             } else {
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - AI Chatbot</title>
-    <link rel="stylesheet" href="/chatbot_project/assets/css/style.css">
+    <link rel="stylesheet" href="/infobot/assets/css/style.css">
 </head>
 <body>
     <div class="auth-container">
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
 
             <div class="auth-footer">
-                Don't have an account? <a href="/chatbot_project/pages/register.php">Create one</a>
+                Don't have an account? <a href="/infobot/pages/register.php">Create one</a>
             </div>
         </div>
     </div>
