@@ -15,7 +15,7 @@ $user_id = getCurrentUserId();
 
 // Get knowledge base entry
 if (!isset($_GET['id'])) {
-    header('Location: /infobot/pages/manage.php');
+    header('Location: ' . BASE_PATH . 'pages/manage.php');
     exit();
 }
 
@@ -33,7 +33,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows !== 1) {
-    header('Location: /infobot/pages/manage.php');
+    header('Location: ' . BASE_PATH . 'pages/manage.php');
     exit();
 }
 
@@ -47,27 +47,27 @@ closeDatabaseConnection($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Knowledge Entry - AI Chatbot</title>
-    <link rel="stylesheet" href="/infobot/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/infobot/pages/chat.php" class="logo">
+                <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="logo">
                     <span class="material-symbols-outlined">smart_toy</span>
                     AI Chatbot
                 </a>
                 <nav class="nav">
-                    <a href="/infobot/pages/chat.php" class="nav-link">
+                    <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="nav-link">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
-                    <a href="/infobot/pages/manage.php" class="nav-link active">
+                    <a href="<?php echo BASE_PATH; ?>pages/manage.php" class="nav-link active">
                         <span class="material-symbols-outlined">dashboard</span>
                         <span>Manage</span>
                     </a>
-                    <a href="/infobot/pages/logout.php" class="nav-link">
+                    <a href="<?php echo BASE_PATH; ?>pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -80,7 +80,7 @@ closeDatabaseConnection($conn);
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">
-                <a href="/infobot/pages/manage.php" style="color: inherit; text-decoration: none;">
+                <a href="<?php echo BASE_PATH; ?>pages/manage.php" style="color: inherit; text-decoration: none;">
                     <span class="material-symbols-outlined" style="vertical-align: middle;">arrow_back</span>
                 </a>
                 Knowledge Entry Details
@@ -136,11 +136,11 @@ closeDatabaseConnection($conn);
             <!-- Actions -->
             <?php if ($entry['created_by'] == $user_id): ?>
                 <div style="margin-top: 24px; display: flex; gap: 12px;">
-                    <a href="/infobot/pages/knowledge_form.php?id=<?php echo $entry['id']; ?>" class="btn btn-primary">
+                    <a href="<?php echo BASE_PATH; ?>pages/knowledge_form.php?id=<?php echo $entry['id']; ?>" class="btn btn-primary">
                         <span class="material-symbols-outlined">edit</span>
                         Edit Entry
                     </a>
-                    <form method="POST" action="/infobot/pages/manage.php" style="display: inline;" 
+                    <form method="POST" action="<?php echo BASE_PATH; ?>pages/manage.php" style="display: inline;" 
                           onsubmit="return confirm('Are you sure you want to delete this entry?');">
                         <input type="hidden" name="action" value="delete_knowledge">
                         <input type="hidden" name="knowledge_id" value="<?php echo $entry['id']; ?>">

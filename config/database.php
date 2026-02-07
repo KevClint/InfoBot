@@ -16,6 +16,18 @@ define('GROQ_API_KEY', EnvLoader::get('GROQ_API_KEY', ''));
 define('GROQ_API_URL', EnvLoader::get('GROQ_API_URL', ''));
 define('GROQ_MODEL', EnvLoader::get('GROQ_MODEL', ''));
 
+// Determine BASE_PATH dynamically for Apache and PHP built-in server compatibility
+if (!defined('BASE_PATH')) {
+    $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+    // Check if /infobot/ is in the path (Apache/XAMPP)
+    if (strpos($script_name, '/infobot/') !== false) {
+        define('BASE_PATH', '/infobot/');
+    } else {
+        // PHP built-in server or running from root
+        define('BASE_PATH', '/');
+    }
+}
+
 /**
  * Create database connection
  */

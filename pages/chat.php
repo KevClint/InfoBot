@@ -23,14 +23,23 @@ $prefs = getUserPreferences($user_id);
 // Get user's conversations
 $conversations = getUserConversations($user_id);
 
-// Get current conversation ID (from URL or create new)
+// Get current conversation ID (from URL or use most recent)
 $current_conversation_id = isset($_GET['conversation_id']) ? intval($_GET['conversation_id']) : null;
+$create_new = isset($_GET['new']) && $_GET['new'] === 'true';
 
-// If no conversation specified, create a new one
+// If no conversation specified, use most recent or create new
 if (!$current_conversation_id) {
-    $current_conversation_id = createConversation($user_id);
-    header('Location: /infobot/pages/chat.php?conversation_id=' . $current_conversation_id);
-    exit();
+    if ($create_new || empty($conversations)) {
+        // Create a new conversation
+        $current_conversation_id = createConversation($user_id);
+        header('Location: ' . BASE_PATH . 'pages/chat.php?conversation_id=' . $current_conversation_id);
+        exit();
+    } else {
+        // User has existing conversations, redirect to most recent
+        $current_conversation_id = $conversations[0]['id'];
+        header('Location: ' . BASE_PATH . 'pages/chat.php?conversation_id=' . $current_conversation_id);
+        exit();
+    }
 }
 
 // Get messages for current conversation
@@ -42,33 +51,33 @@ $messages = getConversationMessages($current_conversation_id);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InfoBot - Chat</title>
-    <link rel="stylesheet" href="/infobot/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/infobot/pages/chat.php" class="logo">
+                <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="logo">
                     <span class="material-symbols-outlined">smart_toy</span>
                     InfoBot
                 </a>
                 <nav class="nav">
-                    <a href="/infobot/pages/chat.php" class="nav-link active">
+                    <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="nav-link active">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
                     <?php if ($user_role === 'admin'): ?>
-                        <a href="/infobot/pages/admin/index.php" class="nav-link">
+                        <a href="<?php echo BASE_PATH; ?>pages/admin/index.php" class="nav-link">
                             <span class="material-symbols-outlined">admin_panel_settings</span>
                             <span>Admin</span>
                         </a>
                     <?php endif; ?>
-                    <a href="/infobot/pages/settings.php" class="nav-link">
+                    <a href="<?php echo BASE_PATH; ?>pages/settings.php" class="nav-link">
                         <span class="material-symbols-outlined">settings</span>
                         <span>Settings</span>
                     </a>
-                    <a href="/infobot/pages/logout.php" class="nav-link">
+                    <a href="<?php echo BASE_PATH; ?>pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -167,6 +176,7 @@ $messages = getConversationMessages($current_conversation_id);
     </div>
 
     <script>
+        const basePath = '<?php echo BASE_PATH; ?>';
         const conversationId = <?php echo $current_conversation_id; ?>;
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
@@ -247,7 +257,7 @@ $messages = getConversationMessages($current_conversation_id);
             const messageEl = btn.closest('.message');
             const messageId = messageEl.dataset.messageId;
             
-            fetch('/infobot/api/toggle_favorite.php', {
+            fetch(basePath + 'api/toggle_favorite.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -286,7 +296,7 @@ $messages = getConversationMessages($current_conversation_id);
         });
 
         // Fix logo link to not create new conversation when clicked
-        document.querySelector('.logo').href = '/infobot/pages/chat.php?conversation_id=' + conversationId;
+        document.querySelector('.logo').href = basePath + 'pages/chat.php?conversation_id=' + conversationId;
 
         // Auto-resize textarea
         messageInput.addEventListener('input', function() {
@@ -323,7 +333,7 @@ $messages = getConversationMessages($current_conversation_id);
 
             try {
                 // Send message to API
-                const response = await fetch('/infobot/api/chat.php', {
+                const response = await fetch(basePath + 'api/chat.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -425,20 +435,20 @@ $messages = getConversationMessages($current_conversation_id);
 
         // Load conversation
         function loadConversation(convId) {
-            window.location.href = '/infobot/pages/chat.php?conversation_id=' + convId;
+            window.location.href = basePath + 'pages/chat.php?conversation_id=' + convId;
         }
 
         // New conversation
         function newConversation() {
             const btn = event.target.closest('button');
             if (btn) btn.disabled = true;
-            window.location.href = '/infobot/pages/chat.php';
+            window.location.href = basePath + 'pages/chat.php?new=true';
         }
 
         // Clear current chat
         function clearChat() {
             if (confirm('Are you sure you want to delete this conversation?')) {
-                fetch('/infobot/api/delete_conversation.php', {
+                fetch(basePath + 'api/delete_conversation.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -450,7 +460,7 @@ $messages = getConversationMessages($current_conversation_id);
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.href = '/infobot/pages/chat.php';
+                        window.location.href = basePath + 'pages/chat.php';
                     } else {
                         alert('Error deleting conversation');
                     }

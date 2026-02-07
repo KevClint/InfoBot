@@ -19,10 +19,14 @@ $prefs = getUserPreferences($user_id);
 // Get user's conversations
 $conn = getDatabaseConnection();
 $conversations = [];
-$result = $conn->query("SELECT id, title, created_at FROM conversations WHERE user_id = $user_id ORDER BY created_at DESC");
+$stmt = $conn->prepare("SELECT id, title, created_at FROM conversations WHERE user_id = ? ORDER BY created_at DESC");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $conversations[] = $row;
 }
+$stmt->close();
 closeDatabaseConnection($conn);
 ?>
 <!DOCTYPE html>
@@ -31,27 +35,27 @@ closeDatabaseConnection($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - InfoBot</title>
-    <link rel="stylesheet" href="/infobot/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/infobot/pages/chat.php" class="logo">
+                <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="logo">
                     <span class="material-symbols-outlined">smart_toy</span>
                     InfoBot
                 </a>
                 <nav class="nav">
-                    <a href="/infobot/pages/chat.php" class="nav-link">
+                    <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="nav-link">
                         <span class="material-symbols-outlined">chat</span>
                         <span>Chat</span>
                     </a>
-                    <a href="/infobot/pages/settings.php" class="nav-link active">
+                    <a href="<?php echo BASE_PATH; ?>pages/settings.php" class="nav-link active">
                         <span class="material-symbols-outlined">settings</span>
                         <span>Settings</span>
                     </a>
-                    <a href="/infobot/pages/logout.php" class="nav-link">
+                    <a href="<?php echo BASE_PATH; ?>pages/logout.php" class="nav-link">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Logout</span>
                     </a>
@@ -150,17 +154,44 @@ closeDatabaseConnection($conn);
             <!-- Data & Privacy -->
             <div class="settings-card">
                 <div class="settings-card-header">
-                    <h3>Data & Privacy</h3>
+                    <h3>Manage Conversations</h3>
+                </div>
+                <div class="settings-card-body">
+                    <?php if (empty($conversations)): ?>
+                        <p class="settings-description">You have no conversations yet. Start a new chat!</p>
+                    <?php else: ?>
+                        <div class="conversations-list">
+                            <?php foreach ($conversations as $conv): ?>
+                                <div class="conversation-item-settings">
+                                    <div class="conversation-info">
+                                        <h4><?php echo htmlspecialchars($conv['title']); ?></h4>
+                                        <p class="text-muted"><?php echo date('M j, Y g:i A', strtotime($conv['created_at'])); ?></p>
+                                    </div>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteConversation(<?php echo $conv['id']; ?>, '<?php echo htmlspecialchars($conv['title']); ?>')">
+                                        <span class="material-symbols-outlined">delete</span>
+                                        Delete
+                                    </button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Data & Privacy -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3>Delete All</h3>
                 </div>
                 <div class="settings-card-body">
                     <div class="settings-item">
                         <div class="settings-label">
-                            <label>Delete Message History</label>
+                            <label>Delete All Conversations</label>
                             <p class="settings-description">Permanently delete all conversations and messages</p>
                         </div>
                         <button class="btn btn-danger" onclick="deleteAllHistory()">
                             <span class="material-symbols-outlined">delete_forever</span>
-                            Delete History
+                            Delete All History
                         </button>
                     </div>
                 </div>
@@ -174,6 +205,7 @@ closeDatabaseConnection($conn);
     </div>
 
     <script>
+        const basePath = '<?php echo BASE_PATH; ?>';
         const currentDarkMode = <?php echo $prefs['dark_mode'] ? 'true' : 'false'; ?>;
         const currentFontSize = '<?php echo $prefs['font_size']; ?>';
         const currentThemeColor = '<?php echo $prefs['theme_color']; ?>';
@@ -237,7 +269,7 @@ closeDatabaseConnection($conn);
 
         // Save preferences to server
         function savePreferences(darkMode, fontSize, themeColor) {
-            fetch('/infobot/api/save_preferences.php', {
+            fetch(basePath + 'api/save_preferences.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -276,7 +308,7 @@ closeDatabaseConnection($conn);
                 return;
             }
 
-            fetch('/infobot/api/delete_all_conversations.php', {
+            fetch(basePath + 'api/delete_all_conversations.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -287,7 +319,7 @@ closeDatabaseConnection($conn);
             .then(data => {
                 if (data.success) {
                     alert('All conversations and messages have been deleted.');
-                    window.location.href = '/infobot/pages/chat.php';
+                    window.location.href = basePath + 'pages/chat.php';
                 } else {
                     alert('Error: ' + (data.error || 'Failed to delete history'));
                 }
@@ -298,8 +330,96 @@ closeDatabaseConnection($conn);
             });
         }
 
+        // Delete single conversation
+        function deleteConversation(convId, convTitle) {
+            if (!confirm(`Are you sure you want to delete the conversation "${convTitle}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            fetch(basePath + 'api/delete_conversation.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    conversation_id: convId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Conversation deleted successfully.');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete conversation'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the conversation.');
+            });
+        }
+
         // Initialize on page load
         initializeTheme();
     </script>
+
+    <style>
+        .conversations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .conversation-item-settings {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color, #e5e7eb);
+        }
+
+        .conversation-item-settings:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .conversation-info {
+            flex: 1;
+        }
+
+        .conversation-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .conversation-info p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-secondary, #666);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+            min-width: auto;
+            white-space: nowrap;
+            margin-left: 12px;
+        }
+
+        .btn-sm .material-symbols-outlined {
+            font-size: 18px;
+        }
+
+        .text-muted {
+            color: var(--text-secondary, #999);
+        }
+    </style>
 </body>
 </html>

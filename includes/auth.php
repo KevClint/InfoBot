@@ -6,6 +6,9 @@
  * session management, and security.
  */
 
+// Ensure database config is loaded (defines BASE_PATH)
+require_once __DIR__ . '/../config/database.php';
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -61,7 +64,7 @@ function isAdmin() {
  */
 function requireAdmin() {
     if (!isLoggedIn() || !isAdmin()) {
-        header('Location: /infobot/pages/chat.php');
+        header('Location: ' . BASE_PATH . 'pages/chat.php');
         exit();
     }
 }
@@ -74,7 +77,7 @@ function requireAdmin() {
 function requireLogin($redirect_to = '') {
     if (!isLoggedIn()) {
         $redirect = $redirect_to ? '?redirect=' . urlencode($redirect_to) : '';
-        header('Location: /infobot/pages/login.php' . $redirect);
+        header('Location: ' . BASE_PATH . 'pages/login.php' . $redirect);
         exit();
     }
 }
