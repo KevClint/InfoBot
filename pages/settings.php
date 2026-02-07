@@ -206,9 +206,9 @@ closeDatabaseConnection($conn);
 
     <script>
         const basePath = '<?php echo BASE_PATH; ?>';
-        const currentDarkMode = <?php echo $prefs['dark_mode'] ? 'true' : 'false'; ?>;
-        const currentFontSize = '<?php echo $prefs['font_size']; ?>';
-        const currentThemeColor = '<?php echo $prefs['theme_color']; ?>';
+        let currentDarkMode = <?php echo $prefs['dark_mode'] ? 'true' : 'false'; ?>;
+        let currentFontSize = '<?php echo $prefs['font_size']; ?>';
+        let currentThemeColor = '<?php echo $prefs['theme_color']; ?>';
 
         // Initialize theme on page load
         function initializeTheme() {
@@ -247,22 +247,25 @@ closeDatabaseConnection($conn);
 
         // Toggle dark mode
         document.getElementById('darkMode').addEventListener('change', function() {
-            savePreferences(this.checked, currentFontSize, currentThemeColor);
-            applyTheme(this.checked, currentFontSize, currentThemeColor);
+            currentDarkMode = this.checked;
+            savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
+            applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
         });
 
         // Change font size
         function changeFontSize(size) {
-            savePreferences(currentDarkMode, size, currentThemeColor);
-            applyTheme(currentDarkMode, size, currentThemeColor);
+            currentFontSize = size;
+            savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
+            applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
             document.querySelectorAll('.font-size-btn').forEach(btn => btn.classList.remove('active'));
             event.target.closest('.font-size-btn').classList.add('active');
         }
 
         // Change theme color
         function changeThemeColor(color) {
-            savePreferences(currentDarkMode, currentFontSize, color);
-            applyTheme(currentDarkMode, currentFontSize, color);
+            currentThemeColor = color;
+            savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
+            applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
             document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
             event.target.closest('.color-btn').classList.add('active');
         }
