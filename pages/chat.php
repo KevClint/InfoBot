@@ -125,9 +125,9 @@ $messages = getConversationMessages($current_conversation_id);
                 <h2 class="chat-title">AI Assistant</h2>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <input type="text" id="searchInput" class="chat-search form-input"
-                        placeholder="Search messages... (Ctrl+K)"
+                        placeholder="Search messages..."
                         aria-label="Search messages in current conversation"
-                        style="padding: 8px 12px; width: 200px;">
+                        style="width: 200px;">
                     <button class="btn btn-icon btn-secondary" onclick="clearChat()"
                         title="Delete this conversation"
                         aria-label="Delete this conversation">
