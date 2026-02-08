@@ -92,9 +92,9 @@ $messages = getConversationMessages($current_conversation_id);
         <!-- Sidebar -->
         <aside class="chat-sidebar">
             <div class="sidebar-header">
-                <button class="btn btn-primary" style="width: 100%;" onclick="newConversation()">
+                <button class="btn btn-primary" style="width: 100%; padding: 16px 24px; font-size: 16px; font-weight: 600;" onclick="newConversation()">
                     <span class="material-symbols-outlined">add</span>
-                    New Chat
+                    New
                 </button>
             </div>
             <div class="sidebar-content">
@@ -102,13 +102,15 @@ $messages = getConversationMessages($current_conversation_id);
                     <p class="text-muted" style="font-size: 14px; padding: 12px;">No conversations yet. Start a new chat!</p>
                 <?php else: ?>
                     <?php foreach ($conversations as $conv): ?>
-                        <div class="conversation-item <?php echo $conv['id'] == $current_conversation_id ? 'active' : ''; ?>" 
-                             onclick="loadConversation(<?php echo $conv['id']; ?>)">
+                        <button class="conversation-item <?php echo $conv['id'] == $current_conversation_id ? 'active' : ''; ?>"
+                                onclick="loadConversation(<?php echo $conv['id']; ?>)"
+                                aria-label="Open conversation: <?php echo htmlspecialchars($conv['title']); ?>"
+                                aria-current="<?php echo $conv['id'] == $current_conversation_id ? 'page' : 'false'; ?>">
                             <div>
                                 <div class="conversation-title"><?php echo htmlspecialchars($conv['title']); ?></div>
                                 <div class="conversation-date"><?php echo date('M j, g:i A', strtotime($conv['updated_at'])); ?></div>
                             </div>
-                        </div>
+                        </button>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
@@ -119,10 +121,14 @@ $messages = getConversationMessages($current_conversation_id);
             <div class="chat-header">
                 <h2 class="chat-title">AI Assistant</h2>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <input type="text" id="searchInput" class="chat-search" placeholder="Search messages..." 
-                           style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); width: 200px;">
-                    <button class="btn btn-icon btn-secondary" onclick="clearChat()" title="Delete chat">
-                        <span class="material-symbols-outlined">delete</span>
+                    <input type="text" id="searchInput" class="chat-search form-input" 
+                           placeholder="Search messages... (Ctrl+K)"
+                           aria-label="Search messages in current conversation"
+                           style="padding: 8px 12px; width: 200px;">
+                    <button class="btn btn-icon btn-secondary" onclick="clearChat()" 
+                            title="Delete this conversation" 
+                            aria-label="Delete this conversation">
+                        <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                     </button>
                 </div>
             </div>
@@ -130,13 +136,32 @@ $messages = getConversationMessages($current_conversation_id);
             <div class="chat-messages" id="chatMessages">
                 <?php if (empty($messages)): ?>
                     <div class="empty-state">
-                        <span class="material-symbols-outlined">chat_bubble_outline</span>
-                        <p>Start a conversation with the AI assistant!</p>
+                        <span class="material-symbols-outlined" style="font-size: 56px; margin-bottom: 12px;">chat_bubble_outline</span>
+                        <h3>Start a conversation</h3>
+                        <p>Ask the AI assistant anything to get started</p>
+                        <div class="suggested-prompts">
+                            <button class="suggested-prompt" onclick="insertPrompt('What can you help me with?')" 
+                                    aria-label="Use suggested prompt: What can you help me with?">
+                                <span class="material-symbols-outlined">lightbulb</span>
+                                <span>What can you help me with?</span>
+                            </button>
+                            <button class="suggested-prompt" onclick="insertPrompt('Tell me something interesting')" 
+                                    aria-label="Use suggested prompt: Tell me something interesting">
+                                <span class="material-symbols-outlined">explore</span>
+                                <span>Tell me something interesting</span>
+                            </button>
+                            <button class="suggested-prompt" onclick="insertPrompt('How do I get started?')" 
+                                    aria-label="Use suggested prompt: How do I get started?">
+                                <span class="material-symbols-outlined">play_circle</span>
+                                <span>How do I get started?</span>
+                            </button>
+                        </div>
                     </div>
                 <?php else: ?>
                     <?php foreach ($messages as $msg): ?>
-                        <div class="message <?php echo $msg['role']; ?>" data-message-id="<?php echo isset($msg['id']) ? $msg['id'] : ''; ?>">
-                            <div class="message-avatar">
+                        <div class="message <?php echo $msg['role']; ?>" data-message-id="<?php echo isset($msg['id']) ? $msg['id'] : ''; ?>"
+                             role="article" aria-label="<?php echo $msg['role'] === 'user' ? 'Your message' : 'Assistant message'; ?>">
+                            <div class="message-avatar" aria-hidden="true">
                                 <span class="material-symbols-outlined">
                                     <?php echo $msg['role'] === 'user' ? 'person' : 'smart_toy'; ?>
                                 </span>
@@ -146,10 +171,21 @@ $messages = getConversationMessages($current_conversation_id);
                                     <?php echo nl2br(htmlspecialchars($msg['content'])); ?>
                                 </div>
                                 <div class="message-time" style="display: flex; align-items: center; gap: 4px;">
-                                    <?php echo date('g:i A', strtotime($msg['created_at'])); ?>
+                                    <time datetime="<?php echo $msg['created_at']; ?>">
+                                        <?php echo date('g:i A', strtotime($msg['created_at'])); ?>
+                                    </time>
                                     <?php if ($msg['role'] === 'assistant'): ?>
-                                        <button class="favorite-btn" onclick="toggleFavorite(this)" title="Add to favorites" style="background: none; border: none; cursor: pointer; padding: 0 4px; color: inherit; font-size: 16px;">
-                                            <span class="material-symbols-outlined" style="font-size: 18px;">favorite</span>
+                                        <button class="message-action-btn copy-btn" 
+                                                onclick="copyMessage(this)" 
+                                                title="Copy message"
+                                                aria-label="Copy message to clipboard">
+                                            <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+                                        </button>
+                                        <button class="message-action-btn favorite-btn" 
+                                                onclick="toggleFavorite(this)" 
+                                                title="Add to favorites"
+                                                aria-label="Add this message to favorites">
+                                            <span class="material-symbols-outlined" style="font-size: 18px;" aria-hidden="true">favorite</span>
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -164,14 +200,21 @@ $messages = getConversationMessages($current_conversation_id);
                     <textarea 
                         id="messageInput" 
                         class="chat-input" 
-                        placeholder="Type your message here..."
+                        placeholder="Type your message here... (Shift+Enter for new line)"
                         rows="1"
                         required
+                        aria-label="Message input"
+                        aria-describedby="inputHint"
                     ></textarea>
-                    <button type="submit" class="send-button" id="sendButton">
-                        <span class="material-symbols-outlined">send</span>
+                    <button type="submit" class="send-button" id="sendButton" 
+                            aria-label="Send message"
+                            title="Send (Enter to send, Shift+Enter for new line)">
+                        <span class="material-symbols-outlined" aria-hidden="true">send</span>
                     </button>
                 </form>
+                <div class="input-hint" id="inputHint" style="font-size: 12px; color: var(--text-light); padding: 4px 12px; text-align: right;">
+                    Press Enter to send • Shift+Enter for new line
+                </div>
             </div>
         </main>
     </div>
@@ -184,7 +227,45 @@ $messages = getConversationMessages($current_conversation_id);
         const sendButton = document.getElementById('sendButton');
         const searchInput = document.getElementById('searchInput');
 
-        // Initialize theme on page load
+        // ===== DRAFT SAVING & RESTORATION =====
+        const DRAFT_KEY = `infobot_draft_${conversationId}`;
+
+        function saveDraft() {
+            const draft = messageInput.value;
+            if (draft.trim()) {
+                localStorage.setItem(DRAFT_KEY, draft);
+            } else {
+                localStorage.removeItem(DRAFT_KEY);
+            }
+        }
+
+        function restoreDraft() {
+            const draft = localStorage.getItem(DRAFT_KEY);
+            if (draft) {
+                messageInput.value = draft;
+                messageInput.style.height = 'auto';
+                messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+            }
+        }
+
+        // Save draft before unloading
+        window.addEventListener('beforeunload', saveDraft);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+K or Cmd+K to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+            // ? to show help (future enhancement)
+            if (e.key === '?' && !e.ctrlKey && !e.metaKey && document.activeElement !== messageInput) {
+                // Could show help modal
+            }
+        });
+
+        // ===== INITIALIZE THEME ON PAGE LOAD =====
         function initializeTheme() {
             const darkMode = localStorage.getItem('darkMode') === 'true';
             const fontSize = localStorage.getItem('fontSize') || 'medium';
@@ -215,7 +296,7 @@ $messages = getConversationMessages($current_conversation_id);
             root.style.setProperty('--color-primary', colorMap[themeColor]);
         }
 
-        // Show welcome modal on first visit
+        // ===== WELCOME MODAL =====
         function showWelcomeModal() {
             const hasVisited = sessionStorage.getItem('visited');
             if (!hasVisited) {
@@ -224,7 +305,7 @@ $messages = getConversationMessages($current_conversation_id);
                         <div class="modal" style="display: block; margin: auto;" onclick="event.stopPropagation()">
                             <div class="modal-header">
                                 <h2>Welcome to InfoBot!</h2>
-                                <button class="close-button" onclick="closeWelcomeModal()">×</button>
+                                <button class="close-button" onclick="closeWelcomeModal()" aria-label="Close welcome modal">×</button>
                             </div>
                             <div class="modal-body" style="text-align: center;">
                                 <div style="font-size: 48px; margin-bottom: 16px;">
@@ -233,7 +314,7 @@ $messages = getConversationMessages($current_conversation_id);
                                 <h3 style="margin-bottom: 12px;">Hello! How can I help you today?</h3>
                                 <p style="color: var(--text-secondary); margin-bottom: 20px;">
                                     I'm your AI assistant. You can ask me questions, get information, or have a conversation. 
-                                    Don't hesitate to reach out!
+                                    Your conversation drafts are automatically saved!
                                 </p>
                                 <div style="display: flex; gap: 8px; justify-content: center;">
                                     <button class="btn btn-primary" onclick="closeWelcomeModal()">Get Started</button>
@@ -253,7 +334,38 @@ $messages = getConversationMessages($current_conversation_id);
             if (modal) modal.remove();
         }
 
-        // Toggle favorite response
+        // ===== COPY MESSAGE FUNCTIONALITY =====
+        function copyMessage(btn) {
+            const messageEl = btn.closest('.message');
+            const contentEl = messageEl.querySelector('.message-content');
+            const text = contentEl.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                // Show feedback
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">check</span>';
+                btn.style.color = 'var(--success-color)';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.color = 'inherit';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy message');
+            });
+        }
+
+        // ===== INSERT PROMPT FROM SUGGESTION =====
+        function insertPrompt(text) {
+            messageInput.value = text;
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+            messageInput.focus();
+            saveDraft();
+        }
+
+        // ===== FAVORITE TOGGLE =====
         function toggleFavorite(btn) {
             const messageEl = btn.closest('.message');
             const messageId = messageEl.dataset.messageId;
@@ -271,41 +383,63 @@ $messages = getConversationMessages($current_conversation_id);
             .then(data => {
                 if (data.success) {
                     btn.classList.toggle('favorited');
+                    const icon = btn.querySelector('.material-symbols-outlined');
                     if (data.action === 'added') {
                         btn.style.color = 'var(--danger-color)';
+                        icon.style.fontVariationSettings = "'FILL' 1";
                     } else {
                         btn.style.color = 'inherit';
+                        icon.style.fontVariationSettings = "'FILL' 0";
                     }
                 }
             })
             .catch(error => console.error('Error:', error));
         }
 
-        // Search messages in current conversation
+        // ===== SEARCH MESSAGES =====
         searchInput.addEventListener('input', function() {
             const query = this.value.trim().toLowerCase();
             const messages = chatMessages.querySelectorAll('.message');
+            let visibleCount = 0;
             
             messages.forEach(msg => {
                 const content = msg.textContent.toLowerCase();
                 if (query === '' || content.includes(query)) {
                     msg.style.display = 'flex';
+                    visibleCount++;
                 } else {
                     msg.style.display = 'none';
                 }
             });
+            
+            // Show no results message
+            const noResults = chatMessages.querySelector('.no-search-results');
+            if (visibleCount === 0 && query) {
+                if (!noResults) {
+                    const message = document.createElement('div');
+                    message.className = 'no-search-results';
+                    message.textContent = `No messages found matching "${query}"`;
+                    chatMessages.appendChild(message);
+                }
+            } else if (noResults) {
+                noResults.remove();
+            }
         });
 
-        // Fix logo link to not create new conversation when clicked
-        document.querySelector('.logo').href = basePath + 'pages/chat.php?conversation_id=' + conversationId;
+        // ===== FIX LOGO LINK =====
+        const logoLink = document.querySelector('.logo');
+        if (logoLink) {
+            logoLink.href = basePath + 'pages/chat.php?conversation_id=' + conversationId;
+        }
 
-        // Auto-resize textarea
+        // ===== AUTO-RESIZE TEXTAREA =====
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            saveDraft();
         });
 
-        // Handle Enter key (Shift+Enter for new line)
+        // ===== HANDLE ENTER KEY =====
         messageInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -313,7 +447,7 @@ $messages = getConversationMessages($current_conversation_id);
             }
         });
 
-        // Send message function
+        // ===== SEND MESSAGE FUNCTION =====
         async function sendMessage(event) {
             event.preventDefault();
             
@@ -328,12 +462,12 @@ $messages = getConversationMessages($current_conversation_id);
             addMessage('user', message);
             messageInput.value = '';
             messageInput.style.height = 'auto';
+            localStorage.removeItem(DRAFT_KEY); // Clear draft after sending
 
             // Show typing indicator
             const typingDiv = showTypingIndicator();
 
             try {
-                // Send message to API
                 const response = await fetch(basePath + 'api/chat.php', {
                     method: 'POST',
                     headers: {
@@ -346,15 +480,11 @@ $messages = getConversationMessages($current_conversation_id);
                 });
 
                 const data = await response.json();
-
-                // Remove typing indicator
                 typingDiv.remove();
 
                 if (data.success) {
-                    // Add bot response to chat
                     addMessage('bot', data.message);
                 } else {
-                    // Show error
                     addMessage('bot', 'Sorry, I encountered an error: ' + (data.error || 'Unknown error'));
                 }
             } catch (error) {
@@ -363,38 +493,53 @@ $messages = getConversationMessages($current_conversation_id);
                 console.error('Error:', error);
             }
 
-            // Re-enable input
             messageInput.disabled = false;
             sendButton.disabled = false;
             messageInput.focus();
         }
 
-        // Add message to chat display
+        // ===== ADD MESSAGE TO DISPLAY =====
         function addMessage(role, content) {
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message ' + role;
+            messageDiv.setAttribute('role', 'article');
+            messageDiv.setAttribute('aria-label', role === 'user' ? 'Your message' : 'Assistant message');
             
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
             
-            let favoriteBtn = '';
+            let actionButtons = '';
             if (role === 'bot') {
-                favoriteBtn = `
-                    <button class="favorite-btn" onclick="toggleFavorite(this)" title="Add to favorites" style="background: none; border: none; cursor: pointer; padding: 0 4px; color: inherit; font-size: 16px;">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">favorite</span>
+                actionButtons = `
+                    <button class="message-action-btn copy-btn" 
+                            onclick="copyMessage(this)" 
+                            title="Copy message"
+                            aria-label="Copy message to clipboard" 
+                            style="background: none; border: none; cursor: pointer; padding: 0 4px; color: inherit; font-size: 16px;">
+                        <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px;">content_copy</span>
+                    </button>
+                    <button class="message-action-btn favorite-btn" 
+                            onclick="toggleFavorite(this)" 
+                            title="Add to favorites" 
+                            aria-label="Add this message to favorites"
+                            style="background: none; border: none; cursor: pointer; padding: 0 4px; color: inherit; font-size: 16px;">
+                        <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px;">favorite</span>
                     </button>
                 `;
             }
             
             messageDiv.innerHTML = `
-                <div class="message-avatar">
+                <div class="message-avatar" aria-hidden="true">
                     <span class="material-symbols-outlined">
                         ${role === 'user' ? 'person' : 'smart_toy'}
                     </span>
                 </div>
                 <div>
                     <div class="message-content">${escapeHtml(content).replace(/\n/g, '<br>')}</div>
-                    <div class="message-time" style="display: flex; align-items: center; gap: 4px;">${timeString}${favoriteBtn}</div>
+                    <div class="message-time" style="display: flex; align-items: center; gap: 4px;">
+                        <time datetime="${new Date().toISOString()}">${timeString}</time>
+                        ${actionButtons}
+                    </div>
                 </div>
             `;
             
@@ -402,14 +547,16 @@ $messages = getConversationMessages($current_conversation_id);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Show typing indicator
+        // ===== TYPING INDICATOR =====
         function showTypingIndicator() {
             const typingDiv = document.createElement('div');
             typingDiv.className = 'message bot';
             typingDiv.id = 'typingIndicator';
+            typingDiv.setAttribute('aria-live', 'polite');
+            typingDiv.setAttribute('aria-label', 'Assistant is typing');
             
             typingDiv.innerHTML = `
-                <div class="message-avatar">
+                <div class="message-avatar" aria-hidden="true">
                     <span class="material-symbols-outlined">smart_toy</span>
                 </div>
                 <div class="message-content">
@@ -427,28 +574,28 @@ $messages = getConversationMessages($current_conversation_id);
             return typingDiv;
         }
 
-        // Escape HTML to prevent XSS
+        // ===== ESCAPE HTML =====
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Load conversation
+        // ===== LOAD CONVERSATION =====
         function loadConversation(convId) {
             window.location.href = basePath + 'pages/chat.php?conversation_id=' + convId;
         }
 
-        // New conversation
+        // ===== NEW CONVERSATION =====
         function newConversation() {
             const btn = event.target.closest('button');
             if (btn) btn.disabled = true;
             window.location.href = basePath + 'pages/chat.php?new=true';
         }
 
-        // Clear current chat
+        // ===== CLEAR CURRENT CHAT =====
         function clearChat() {
-            if (confirm('Are you sure you want to delete this conversation?')) {
+            if (confirm('Are you sure you want to delete this conversation? This action cannot be undone.')) {
                 fetch(basePath + 'api/delete_conversation.php', {
                     method: 'POST',
                     headers: {
@@ -463,17 +610,20 @@ $messages = getConversationMessages($current_conversation_id);
                     if (data.success) {
                         window.location.href = basePath + 'pages/chat.php';
                     } else {
-                        alert('Error deleting conversation');
+                        alert('Error deleting conversation: ' + (data.error || 'Unknown error'));
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting conversation');
                 });
             }
         }
 
-        // Initialize on page load
+        // ===== INITIALIZE ON PAGE LOAD =====
         initializeTheme();
+        restoreDraft();
         showWelcomeModal();
-
-        // Auto-scroll to bottom on load
         chatMessages.scrollTop = chatMessages.scrollHeight;
     </script>
 </body>
