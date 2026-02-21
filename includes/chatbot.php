@@ -93,6 +93,50 @@ function getSystemPrompt() {
 }
 
 /**
+ * Get a knowledge-base answer for the current user message.
+ * Uses exact match first, then close text containment matching.
+ *
+ * @param string $user_message User input
+ * @return string|null Matched answer or null when no match is found
+ */
+function getKnowledgeBaseAnswer($user_message) {
+    $normalized = preg_replace('/\s+/', ' ', trim($user_message));
+    if ($normalized === '') {
+        return null;
+    }
+
+    $conn = getDatabaseConnection();
+
+    $sql = "SELECT answer
+            FROM knowledge_base
+            WHERE is_active = TRUE
+              AND (
+                LOWER(TRIM(question)) = LOWER(TRIM(?))
+                OR LOWER(?) LIKE CONCAT('%', LOWER(TRIM(question)), '%')
+                OR LOWER(question) LIKE CONCAT('%', LOWER(?), '%')
+              )
+            ORDER BY
+              CASE WHEN LOWER(TRIM(question)) = LOWER(TRIM(?)) THEN 0 ELSE 1 END,
+              CHAR_LENGTH(question) ASC
+            LIMIT 1";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssss", $normalized, $normalized, $normalized, $normalized);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $answer = null;
+    if ($row = $result->fetch_assoc()) {
+        $answer = $row['answer'];
+    }
+
+    $stmt->close();
+    closeDatabaseConnection($conn);
+
+    return $answer;
+}
+
+/**
  * Save message to database
  * 
  * @param int $conversation_id Conversation ID

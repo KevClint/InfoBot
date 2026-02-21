@@ -56,6 +56,23 @@ if (count($existing_messages) === 1) {
     updateConversationTitle($conversation_id, $user_id, $title);
 }
 
+// Prefer direct answer from active knowledge base when matched
+$kb_answer = getKnowledgeBaseAnswer($user_message);
+if ($kb_answer !== null) {
+    if (saveMessage($conversation_id, $user_id, 'assistant', $kb_answer)) {
+        echo json_encode([
+            'success' => true,
+            'message' => $kb_answer
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Failed to save bot response'
+        ]);
+    }
+    exit();
+}
+
 // Get conversation history for context (last 10 messages)
 $messages = getConversationMessages($conversation_id);
 $chat_history = [];

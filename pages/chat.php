@@ -37,7 +37,7 @@ $messages = getConversationMessages($current_conversation_id);
     <link rel="icon" href="<?php echo BASE_PATH; ?>assets/icons/logo-robot-64px.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <script src="<?php echo BASE_PATH; ?>assets/js/theme-init.js"></script>
     <style>
@@ -184,7 +184,31 @@ $messages = getConversationMessages($current_conversation_id);
         .conv-list {
             flex: 1;
             overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-gutter: stable;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, .52) transparent;
             padding: 10px 10px 12px
+        }
+
+        .conv-list::-webkit-scrollbar {
+            width: 11px
+        }
+
+        .conv-list::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        .conv-list::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, .48);
+            border-radius: 999px;
+            border: 3px solid transparent;
+            background-clip: content-box
+        }
+
+        .conv-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, .7);
+            background-clip: content-box
         }
 
         .conv {
@@ -333,6 +357,7 @@ $messages = getConversationMessages($current_conversation_id);
         }
 
         .empty h1 {
+            font-family: 'Sora', sans-serif;
             font-size: 34px;
             font-weight: 600;
             letter-spacing: -.02em;
@@ -340,6 +365,7 @@ $messages = getConversationMessages($current_conversation_id);
         }
 
         .empty p {
+            font-family: 'Sora', sans-serif;
             color: var(--sub);
             margin-bottom: 26px
         }
@@ -373,7 +399,7 @@ $messages = getConversationMessages($current_conversation_id);
 
         .csub {
             font-size: 12px;
-            color: #64748b
+            color: var(--sub)
         }
 
         .msgs {
@@ -655,7 +681,8 @@ $messages = getConversationMessages($current_conversation_id);
         html.dark-mode .menu,
         html.dark-mode .chip,
         html.dark-mode .avatar,
-        html.dark-mode .starter-card {
+        html.dark-mode .starter-card,
+        html.dark-mode .card {
             background: var(--panel);
             color: var(--text);
             border-color: var(--line)
@@ -665,8 +692,17 @@ $messages = getConversationMessages($current_conversation_id);
             color: var(--text)
         }
 
-        html.dark-mode .starter-sub {
+        html.dark-mode .starter-sub,
+        html.dark-mode .csub {
             color: var(--sub)
+        }
+
+        html.dark-mode .ctitle {
+            color: var(--text)
+        }
+
+        html.dark-mode .card:hover {
+            border-color: #475569
         }
 
         html.dark-mode .composer {
@@ -754,7 +790,7 @@ $messages = getConversationMessages($current_conversation_id);
                     <button class="menu" id="menuBtn" type="button" aria-label="Open conversations"><span class="material-symbols-rounded">menu</span></button>
                     <div class="title">Welcome, <?php echo htmlspecialchars($username); ?></div>
                 </div>
-                <div class="chip">Model: API</div>
+                <div class="chip">Model: GROQ API - Llama3.18B</div>
             </header>
 
             <section class="scroll" id="chatScroll">
@@ -804,7 +840,7 @@ $messages = getConversationMessages($current_conversation_id);
                         <textarea id="messageInput" rows="1" placeholder="Message InfoBot..." aria-label="Type a message"></textarea>
                         <button class="send" id="sendButton" type="submit" aria-label="Send"><span class="material-symbols-rounded">north_east</span></button>
                     </form>
-                    <div class="hint">Enter to send Ã¢â‚¬Â¢ Shift + Enter for new line</div>
+                    <div class="hint">Enter to send, Shift + Enter for new line</div>
                 </div>
             </div>
         </main>
@@ -1090,4 +1126,3 @@ const messageEnd = document.getElementById('messageEnd');
 </body>
 
 </html>
-
