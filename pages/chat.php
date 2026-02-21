@@ -1,49 +1,30 @@
-<?php
-
-/**
- * CHAT PAGE
- * 
- * Main chat interface where users interact with the AI chatbot.
- * Displays conversation history and allows sending new messages.
- * Features: favorites, search, dark mode, theme colors, font size.
- */
-
+﻿<?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/chatbot.php';
-require_once __DIR__ . '/../includes/preferences.php';
 
-// Require user to be logged in
 requireLogin();
 
 $user_id = getCurrentUserId();
 $username = getCurrentUsername();
 $user_role = getCurrentUserRole();
-$prefs = getUserPreferences($user_id);
 
-// Get user's conversations
 $conversations = getUserConversations($user_id);
-
-// Get current conversation ID (from URL or use most recent)
 $current_conversation_id = isset($_GET['conversation_id']) ? intval($_GET['conversation_id']) : null;
 $create_new = isset($_GET['new']) && $_GET['new'] === 'true';
 
-// If no conversation specified, use most recent or create new
 if (!$current_conversation_id) {
     if ($create_new || empty($conversations)) {
-        // Create a new conversation
         $current_conversation_id = createConversation($user_id);
         header('Location: ' . BASE_PATH . 'pages/chat.php?conversation_id=' . $current_conversation_id);
         exit();
-    } else {
-        // User has existing conversations, redirect to most recent
-        $current_conversation_id = $conversations[0]['id'];
-        header('Location: ' . BASE_PATH . 'pages/chat.php?conversation_id=' . $current_conversation_id);
-        exit();
     }
+
+    $current_conversation_id = $conversations[0]['id'];
+    header('Location: ' . BASE_PATH . 'pages/chat.php?conversation_id=' . $current_conversation_id);
+    exit();
 }
 
-// Get messages for current conversation
 $messages = getConversationMessages($current_conversation_id);
 ?>
 <!DOCTYPE html>
@@ -52,170 +33,778 @@ $messages = getConversationMessages($current_conversation_id);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfoBot - Chat</title>
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
+    <title>InfoBot</title>
     <link rel="icon" href="<?php echo BASE_PATH; ?>assets/icons/logo-robot-64px.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <script src="<?php echo BASE_PATH; ?>assets/js/theme-init.js"></script>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --panel: #fff;
+            --sidebar: #111827;
+            --sidebar2: #1f2937;
+            --user: #f3f4f6;
+            --text: #0f172a;
+            --sub: #475569;
+            --muted: #94a3b8;
+            --line: #e5e7eb;
+            --accent: #4f46e5;
+            --accent-h: #4338ca;
+            --shadow: 0 8px 30px rgba(15, 23, 42, .06);
+            --sidew: 288px;
+            --stage: 860px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.55;
+            font-size: var(--font-size-base, 15px)
+        }
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            user-select: none
+        }
+
+        .app {
+            display: block;
+            min-height: 100vh
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            height: 100vh;
+            width: var(--sidew);
+            min-width: var(--sidew);
+            background: linear-gradient(180deg, #020617 0%, #020b2a 100%);
+            color: #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            z-index: 40;
+            border-right: 1px solid rgba(148, 163, 184, .22);
+            box-shadow: inset -1px 0 0 rgba(255, 255, 255, .03);
+            overflow-y: auto
+        }
+
+        .side-top {
+            padding: 16px 14px 12px;
+            border-bottom: 1px solid rgba(148, 163, 184, .18)
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px
+        }
+
+        .brand-left {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .brand-github {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(148, 163, 184, .36);
+            border-radius: 999px;
+            background: rgba(15, 23, 42, .45);
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: .16s
+        }
+
+        .brand-github:hover {
+            background: rgba(30, 41, 59, .8);
+            border-color: rgba(148, 163, 184, .56);
+            transform: translateY(-1px)
+        }
+
+        .brand-github svg {
+            width: 15px;
+            height: 15px;
+            fill: currentColor
+        }
+
+        .ghost {
+            width: 100%;
+            border: 1px solid rgba(148, 163, 184, .32);
+            background: rgba(15, 23, 42, .45);
+            color: #f8fafc;
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 600
+        }
+
+        .ghost:hover {
+            background: rgba(30, 41, 59, .75);
+            border-color: rgba(148, 163, 184, .46)
+        }
+
+        .conv-head {
+            padding: 2px 8px 10px;
+            font-size: 11px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #93a3be
+        }
+
+        .conv-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 10px 12px
+        }
+
+        .conv {
+            width: 100%;
+            text-align: left;
+            border: 1px solid transparent;
+            background: rgba(15, 23, 42, .3);
+            color: #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            position: relative;
+            transition: .16s
+        }
+
+        .conv::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: transparent;
+            border-radius: 2px
+        }
+
+        .conv:hover {
+            background: rgba(30, 41, 59, .72);
+            border-color: rgba(148, 163, 184, .34)
+        }
+
+        .conv.active {
+            background: rgba(30, 41, 59, .95);
+            border-color: rgba(99, 102, 241, .55)
+        }
+
+        .conv.active::before {
+            background: var(--accent)
+        }
+
+        .conv-title {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .conv-time {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px
+        }
+
+        .side-foot {
+            border-top: 1px solid rgba(148, 163, 184, .2);
+            padding: 10px;
+            background: rgba(2, 6, 23, .45)
+        }
+
+        .side-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px
+        }
+
+        .side-link:hover {
+            background: rgba(30, 41, 59, .75);
+            color: #f8fafc
+        }
+
+        .main {
+            margin-left: var(--sidew);
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh
+        }
+
+        .top {
+            height: 62px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background: rgba(248, 250, 252, .85);
+            backdrop-filter: blur(6px);
+            position: sticky;
+            top: 0;
+            z-index: 20
+        }
+
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .menu {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer
+        }
+
+        .title {
+            font-size: 15px;
+            font-weight: 600
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            padding: 5px 10px;
+            font-size: 12px;
+            color: var(--sub)
+        }
+
+        .scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px 8px
+        }
+
+        .stage {
+            max-width: var(--stage);
+            margin: 0 auto
+        }
+
+        .empty {
+            text-align: center;
+            padding: 52px 0 20px
+        }
+
+        .empty h1 {
+            font-size: 34px;
+            font-weight: 600;
+            letter-spacing: -.02em;
+            margin-bottom: 10px
+        }
+
+        .empty p {
+            color: var(--sub);
+            margin-bottom: 26px
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px
+        }
+
+        .card {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: #fff;
+            padding: 14px;
+            cursor: pointer;
+            text-align: left;
+            transition: .15s
+        }
+
+        .card:hover {
+            transform: translateY(-1px);
+            border-color: #cbd5e1
+        }
+
+        .ctitle {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px
+        }
+
+        .csub {
+            font-size: 12px;
+            color: #64748b
+        }
+
+        .msgs {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding-bottom: 16px
+        }
+
+        .msg {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start
+        }
+
+        .msg.user {
+            justify-content: flex-end
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            flex: 0 0 auto
+        }
+
+        .wrap {
+            max-width: min(84%, 720px)
+        }
+
+        .bubble {
+            border-radius: 16px;
+            padding: 11px 14px;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: anywhere
+        }
+
+        .msg.user .bubble {
+            background: var(--user);
+            border: 1px solid #e5e7eb
+        }
+
+        .msg.assistant .bubble {
+            background: transparent;
+            border: 0;
+            padding-left: 0;
+            padding-right: 0
+        }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #94a3b8
+        }
+
+        .icon {
+            border: 0;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            padding: 0
+        }
+
+        .icon:hover {
+            color: #64748b
+        }
+
+        .typing {
+            display: inline-flex;
+            gap: 5px;
+            padding: 8px 0
+        }
+
+        .typing span {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #cbd5e1;
+            animation: pulse 1.1s infinite ease-in-out
+        }
+
+        .typing span:nth-child(2) {
+            animation-delay: .15s
+        }
+
+        .typing span:nth-child(3) {
+            animation-delay: .3s
+        }
+
+        @keyframes pulse {
+
+            0%,
+            80%,
+            100% {
+                transform: translateY(0);
+                opacity: .4
+            }
+
+            40% {
+                transform: translateY(-2px);
+                opacity: 1
+            }
+        }
+
+        .composer-shell {
+            position: sticky;
+            bottom: 0;
+            padding: 16px 20px 18px;
+            background: linear-gradient(to top, rgba(248, 250, 252, 1) 64%, rgba(248, 250, 252, .7) 86%, rgba(248, 250, 252, 0))
+        }
+
+        .composer-stage {
+            max-width: var(--stage);
+            margin: 0 auto
+        }
+
+        .composer {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: var(--shadow);
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end
+        }
+
+        .composer textarea {
+            flex: 1;
+            border: 0;
+            background: transparent;
+            resize: none;
+            outline: none;
+            min-height: 24px;
+            max-height: 180px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            color: var(--text);
+            line-height: 1.5;
+            padding: 6px 4px
+        }
+
+        .composer textarea::placeholder {
+            color: #94a3b8
+        }
+
+        .send {
+            width: 38px;
+            height: 38px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex: 0 0 auto
+        }
+
+        .send:hover {
+            background: var(--accent-h)
+        }
+
+        .send:disabled {
+            opacity: .45;
+            cursor: not-allowed
+        }
+
+        .hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center
+        }
+
+        pre,
+        code {
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .bubble pre {
+            margin: 10px 0;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            background: rgba(2, 6, 23, .06);
+            border-radius: 8px;
+            overflow: auto
+        }
+
+        .bubble code {
+            background: rgba(148, 163, 184, .2);
+            padding: 1px 5px;
+            border-radius: 6px
+        }
+
+        .bubble ul,
+        .bubble ol {
+            margin: 8px 0 8px 20px
+        }
+
+        .bubble li {
+            margin: 3px 0
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .15s;
+            z-index: 30
+        }
+
+        .overlay.open {
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        @media (max-width:960px) {
+            .menu {
+                display: flex
+            }
+
+            .main {
+                margin-left: 0
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                transition: transform .18s;
+                box-shadow: 0 20px 40px rgba(2, 6, 23, .45)
+            }
+
+            .sidebar.open {
+                transform: translateX(0)
+            }
+
+            .cards {
+                grid-template-columns: 1fr
+            }
+        }
+
+        html.dark-mode {
+            --bg: #0b1220;
+            --panel: #0f172a;
+            --sidebar: #020617;
+            --sidebar2: #111827;
+            --user: #1e293b;
+            --text: #e2e8f0;
+            --sub: #94a3b8;
+            --muted: #64748b;
+            --line: #334155;
+            --shadow: 0 8px 30px rgba(2, 6, 23, .45)
+        }
+
+        html.dark-mode .top {
+            background: rgba(11, 18, 32, .86);
+            border-bottom-color: var(--line)
+        }
+
+        html.dark-mode .menu,
+        html.dark-mode .chip,
+        html.dark-mode .avatar,
+        html.dark-mode .starter-card {
+            background: var(--panel);
+            color: var(--text);
+            border-color: var(--line)
+        }
+
+        html.dark-mode .starter-title {
+            color: var(--text)
+        }
+
+        html.dark-mode .starter-sub {
+            color: var(--sub)
+        }
+
+        html.dark-mode .composer {
+            background: var(--panel);
+            border-color: var(--line)
+        }
+
+        html.dark-mode .composer-shell {
+            background: linear-gradient(to top, rgba(11, 18, 32, 1) 64%, rgba(11, 18, 32, .78) 86%, rgba(11, 18, 32, 0))
+        }
+
+        html.dark-mode .composer textarea {
+            color: var(--text)
+        }
+
+        html.dark-mode .composer textarea::placeholder {
+            color: var(--sub)
+        }
+
+        html.dark-mode .conv:hover {
+            background: rgba(30, 41, 59, .85)
+        }
+
+        html.dark-mode .bubble pre {
+            background: rgba(2, 6, 23, .45)
+        }
+
+        html.dark-mode .bubble code {
+            background: rgba(51, 65, 85, .55)
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="logo">
-                    <span class="material-symbols-outlined">smart_toy</span>
-                    InfoBot
-                </a>
-                <nav class="nav">
-                    <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="nav-link active">
-                        <span class="material-symbols-outlined">chat</span>
-                        <span>Chat</span>
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="side-top">
+                <div class="brand">
+                    <div class="brand-left"><span class="material-symbols-rounded">smart_toy</span><span>InfoBot</span></div>
+                    <a class="brand-github" href="https://github.com/KevClint" target="_blank" rel="noopener noreferrer" aria-label="Open GitHub profile">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58l-.02-2.03c-3.34.73-4.04-1.41-4.04-1.41-.55-1.36-1.33-1.72-1.33-1.72-1.09-.73.09-.72.09-.72 1.2.08 1.83 1.22 1.83 1.22 1.08 1.82 2.83 1.29 3.52.98.11-.77.42-1.29.76-1.59-2.67-.3-5.47-1.31-5.47-5.86 0-1.3.47-2.36 1.23-3.19-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.22a11.55 11.55 0 0 1 6 0c2.3-1.54 3.3-1.22 3.3-1.22.65 1.65.24 2.87.12 3.17.77.83 1.23 1.89 1.23 3.19 0 4.56-2.8 5.55-5.48 5.85.43.37.81 1.09.81 2.21l-.01 3.28c0 .32.22.7.82.58A12 12 0 0 0 12 .5Z" />
+                        </svg>
                     </a>
-                    <?php if ($user_role === 'admin'): ?>
-                        <a href="<?php echo BASE_PATH; ?>pages/admin/index.php" class="nav-link">
-                            <span class="material-symbols-outlined">admin_panel_settings</span>
-                            <span>Admin</span>
-                        </a>
-                    <?php endif; ?>
-                    <a href="<?php echo BASE_PATH; ?>pages/settings.php" class="nav-link">
-                        <span class="material-symbols-outlined">settings</span>
-                        <span>Settings</span>
-                    </a>
-                    <a href="<?php echo BASE_PATH; ?>pages/logout.php" class="nav-link">
-                        <span class="material-symbols-outlined">logout</span>
-                        <span>Logout</span>
-                    </a>
-                </nav>
+                </div>
+                <button class="ghost" type="button" onclick="newConversation()"><span class="material-symbols-rounded">add</span>New Chat</button>
             </div>
-        </div>
-    </header>
-
-    <!-- Chat Container -->
-    <div class="chat-container">
-        <!-- Sidebar -->
-        <aside class="chat-sidebar">
-            <div class="sidebar-header">
-                <button class="btn btn-primary" style="width: 100%; padding: 16px 24px; font-size: 16px; font-weight: 600;" onclick="newConversation()">
-                    <span class="material-symbols-outlined">add</span>
-                    New
-                </button>
-            </div>
-            <div class="sidebar-content">
+            <div class="conv-list">
+                <div class="conv-head">Recent Chats</div>
                 <?php if (empty($conversations)): ?>
-                    <p class="text-muted" style="font-size: 14px; padding: 12px;">No conversations yet. Start a new chat!</p>
+                    <div class="conv active" style="cursor:default;">
+                        <div class="conv-title">Project kickoff questions</div>
+                        <div class="conv-time">Demo conversation</div>
+                    </div>
+                    <div class="conv" style="cursor:default;">
+                        <div class="conv-title">Marketing copy ideas</div>
+                        <div class="conv-time">Demo conversation</div>
+                    </div>
+                    <div class="conv" style="cursor:default;">
+                        <div class="conv-title">Build a 7-day study plan</div>
+                        <div class="conv-time">Demo conversation</div>
+                    </div>
                 <?php else: ?>
                     <?php foreach ($conversations as $conv): ?>
-                        <button class="conversation-item <?php echo $conv['id'] == $current_conversation_id ? 'active' : ''; ?>"
-                            onclick="loadConversation(<?php echo $conv['id']; ?>)"
-                            aria-label="Open conversation: <?php echo htmlspecialchars($conv['title']); ?>"
-                            aria-current="<?php echo $conv['id'] == $current_conversation_id ? 'page' : 'false'; ?>">
-                            <div>
-                                <div class="conversation-title"><?php echo htmlspecialchars($conv['title']); ?></div>
-                                <div class="conversation-date"><?php echo date('M j, g:i A', strtotime($conv['updated_at'])); ?></div>
-                            </div>
+                        <button class="conv <?php echo ((int)$conv['id'] === (int)$current_conversation_id) ? 'active' : ''; ?>" onclick="loadConversation(<?php echo (int)$conv['id']; ?>)">
+                            <div class="conv-title"><?php echo htmlspecialchars($conv['title']); ?></div>
+                            <div class="conv-time"><?php echo date('M j, g:i A', strtotime($conv['updated_at'])); ?></div>
                         </button>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
+            <div class="side-foot">
+                <?php if ($user_role === 'admin'): ?>
+                    <a class="side-link" href="<?php echo BASE_PATH; ?>pages/admin/index.php"><span class="material-symbols-rounded">admin_panel_settings</span><span>Admin</span></a>
+                <?php endif; ?>
+                <a class="side-link" href="<?php echo BASE_PATH; ?>pages/settings.php"><span class="material-symbols-rounded">settings</span><span>Settings</span></a>
+                <a class="side-link" href="<?php echo BASE_PATH; ?>pages/logout.php"><span class="material-symbols-rounded">logout</span><span>Logout</span></a>
+            </div>
         </aside>
 
-        <!-- Main Chat Area -->
-        <main class="chat-main">
-            <div class="chat-header">
-                <h2 class="chat-title">AI Assistant</h2>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <input type="text" id="searchInput" class="chat-search form-input"
-                        placeholder="Search messages..."
-                        aria-label="Search messages in current conversation"
-                        style="width: 200px;">
-                    <button class="btn btn-icon btn-secondary" onclick="clearChat()"
-                        title="Delete this conversation"
-                        aria-label="Delete this conversation">
-                        <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-                    </button>
+        <main class="main">
+            <header class="top">
+                <div class="top-left">
+                    <button class="menu" id="menuBtn" type="button" aria-label="Open conversations"><span class="material-symbols-rounded">menu</span></button>
+                    <div class="title">Welcome, <?php echo htmlspecialchars($username); ?></div>
                 </div>
-            </div>
+                <div class="chip">Model: API</div>
+            </header>
 
-            <div class="chat-messages" id="chatMessages">
-                <?php if (empty($messages)): ?>
-                    <div class="empty-state">
-                        <span class="material-symbols-outlined" style="font-size: 56px; margin-bottom: 12px;">chat_bubble_outline</span>
-                        <h3>Start a conversation</h3>
-                        <p>Ask the AI assistant anything to get started</p>
-                        <div class="suggested-prompts">
-                            <button class="suggested-prompt" onclick="insertPrompt('What can you help me with?')"
-                                aria-label="Use suggested prompt: What can you help me with?">
-                                <span class="material-symbols-outlined">lightbulb</span>
-                                <span>What can you help me with?</span>
-                            </button>
-                            <button class="suggested-prompt" onclick="insertPrompt('Tell me something interesting')"
-                                aria-label="Use suggested prompt: Tell me something interesting">
-                                <span class="material-symbols-outlined">explore</span>
-                                <span>Tell me something interesting</span>
-                            </button>
-                            <button class="suggested-prompt" onclick="insertPrompt('How do I get started?')"
-                                aria-label="Use suggested prompt: How do I get started?">
-                                <span class="material-symbols-outlined">play_circle</span>
-                                <span>How do I get started?</span>
-                            </button>
+            <section class="scroll" id="chatScroll">
+                <div class="stage">
+                    <?php if (empty($messages)): ?>
+                        <div class="empty" id="emptyState">
+                            <h1>Welcome to InfoBot</h1>
+                            <p>Ask anything. Draft, summarize, brainstorm, or debug in one place.</p>
+                            <div class="cards">
+                                <button class="card" type="button" onclick="insertStarterPrompt('Write a concise project kickoff brief with goals, scope, and risks.')">
+                                    <div class="ctitle">Create a project brief</div>
+                                    <div class="csub">Plan scope, timeline, and key deliverables.</div>
+                                </button>
+                                <button class="card" type="button" onclick="insertStarterPrompt('Summarize this meeting transcript into action items and owners.')">
+                                    <div class="ctitle">Summarize a meeting</div>
+                                    <div class="csub">Extract decisions, blockers, and action items.</div>
+                                </button>
+                                <button class="card" type="button" onclick="insertStarterPrompt('Help me debug a PHP error: Undefined array key in login flow.')">
+                                    <div class="ctitle">Debug code issues</div>
+                                    <div class="csub">Trace errors and suggest production-safe fixes.</div>
+                                </button>
+                            </div>
                         </div>
+                    <?php endif; ?>
+
+                    <div class="msgs" id="messageList">
+                        <?php foreach ($messages as $msg): ?>
+                            <article class="msg <?php echo $msg['role'] === 'user' ? 'user' : 'assistant'; ?>">
+                                <?php if ($msg['role'] !== 'user'): ?><div class="avatar" aria-hidden="true"><span class="material-symbols-rounded">smart_toy</span></div><?php endif; ?>
+                                <div class="wrap">
+                                    <div class="bubble"><?php echo nl2br(htmlspecialchars($msg['content'])); ?></div>
+                                    <div class="meta">
+                                        <time datetime="<?php echo htmlspecialchars($msg['created_at']); ?>"><?php echo date('g:i A', strtotime($msg['created_at'])); ?></time>
+                                        <?php if ($msg['role'] !== 'user'): ?><button class="icon" type="button" onclick="copyMessage(this)" aria-label="Copy response"><span class="material-symbols-rounded" style="font-size:18px;">content_copy</span></button><?php endif; ?>
+                                    </div>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
                     </div>
-                <?php else: ?>
-                    <?php foreach ($messages as $msg): ?>
-                        <div class="message <?php echo $msg['role']; ?>" data-message-id="<?php echo isset($msg['id']) ? $msg['id'] : ''; ?>"
-                            role="article" aria-label="<?php echo $msg['role'] === 'user' ? 'Your message' : 'Assistant message'; ?>">
-                            <div class="message-avatar" aria-hidden="true">
-                                <span class="material-symbols-outlined">
-                                    <?php echo $msg['role'] === 'user' ? 'person' : 'smart_toy'; ?>
-                                </span>
-                            </div>
-                            <div>
-                                <div class="message-content">
-                                    <?php echo nl2br(htmlspecialchars($msg['content'])); ?>
-                                </div>
-                                <div class="message-time" style="display: flex; align-items: center; gap: 4px;">
-                                    <time datetime="<?php echo $msg['created_at']; ?>">
-                                        <?php echo date('g:i A', strtotime($msg['created_at'])); ?>
-                                    </time>
-                                    <?php if ($msg['role'] === 'assistant'): ?>
-                                        <button class="message-action-btn copy-btn"
-                                            onclick="copyMessage(this)"
-                                            title="Copy message"
-                                            aria-label="Copy message to clipboard">
-                                            <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
-                                        </button>
-                                        <button class="message-action-btn favorite-btn"
-                                            onclick="toggleFavorite(this)"
-                                            title="Add to favorites"
-                                            aria-label="Add this message to favorites">
-                                            <span class="material-symbols-outlined" style="font-size: 18px;" aria-hidden="true">favorite</span>
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
+                    <div id="messageEnd" aria-hidden="true"></div>
+                </div>
+            </section>
 
-            <div class="chat-input-container">
-                <form class="chat-input-wrapper" onsubmit="sendMessage(event)">
-                    <textarea
-                        id="messageInput"
-                        class="chat-input"
-                        placeholder="Type your message here... (Shift+Enter for new line)"
-                        rows="1"
-                        required
-                        aria-label="Message input"
-                        aria-describedby="inputHint"></textarea>
-                    <button type="submit" class="send-button" id="sendButton"
-                        aria-label="Send message"
-                        title="Send (Enter to send, Shift+Enter for new line)">
-                        <span class="material-symbols-outlined" aria-hidden="true">send</span>
-                    </button>
-                </form>
-                <div class="input-hint" id="inputHint" style="font-size: 12px; color: var(--text-light); padding: 4px 12px; text-align: right;">
-                    Press Enter to send • Shift+Enter for new line
+            <div class="composer-shell">
+                <div class="composer-stage">
+                    <form class="composer" onsubmit="sendMessage(event)">
+                        <textarea id="messageInput" rows="1" placeholder="Message InfoBot..." aria-label="Type a message"></textarea>
+                        <button class="send" id="sendButton" type="submit" aria-label="Send"><span class="material-symbols-rounded">north_east</span></button>
+                    </form>
+                    <div class="hint">Enter to send Ã¢â‚¬Â¢ Shift + Enter for new line</div>
                 </div>
             </div>
         </main>
@@ -223,276 +812,248 @@ $messages = getConversationMessages($current_conversation_id);
 
     <script>
         const basePath = '<?php echo BASE_PATH; ?>';
-        const conversationId = <?php echo $current_conversation_id; ?>;
-        const chatMessages = document.getElementById('chatMessages');
+        const conversationId = <?php echo (int)$current_conversation_id; ?>;
+        const chatScroll = document.getElementById('chatScroll');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const menuBtn = document.getElementById('menuBtn');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-        const searchInput = document.getElementById('searchInput');
-
-        // ===== DRAFT SAVING & RESTORATION =====
+        const emptyState = document.getElementById('emptyState');
+        const messageList = document.getElementById('messageList');
+const messageEnd = document.getElementById('messageEnd');
         const DRAFT_KEY = `infobot_draft_${conversationId}`;
 
-        function saveDraft() {
-            const draft = messageInput.value;
-            if (draft.trim()) {
-                localStorage.setItem(DRAFT_KEY, draft);
-            } else {
-                localStorage.removeItem(DRAFT_KEY);
+        function openSidebar() {
+            sidebar.classList.add('open');
+            overlay.classList.add('open')
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open')
+        }
+        if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 960) closeSidebar();
+        });
+
+        function scrollToBottom() {
+            chatScroll.scrollTop = chatScroll.scrollHeight;
+        }
+
+        let bottomFrame = null;
+
+        function ensureBottom() {
+            if (bottomFrame !== null) return;
+            bottomFrame = requestAnimationFrame(() => {
+                bottomFrame = null;
+                chatScroll.scrollTop = chatScroll.scrollHeight;
+            });
+        }
+
+        function escapeHtml(text) {
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        function getTime() {
+            return new Date().toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+
+        function removeEmptyState() {
+            if (emptyState && emptyState.parentNode) emptyState.remove();
+        }
+
+        function renderAssistantHtml(text) {
+            let safe = escapeHtml(text || '').replace(/\r\n/g, '\n');
+
+            const blocks = [];
+            safe = safe.replace(/```([\s\S]*?)```/g, function(_, code) {
+                const token = '__CODEBLOCK_' + blocks.length + '__';
+                blocks.push('<pre><code>' + code.trim() + '</code></pre>');
+                return token;
+            });
+
+            safe = safe.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+            safe = safe.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+            safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            safe = safe.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+
+            const lines = safe.split('\n');
+            let html = '';
+            let inUl = false;
+            let inOl = false;
+
+            for (const lineRaw of lines) {
+                const line = lineRaw.trim();
+                const ulMatch = line.match(/^[-*]\s+(.+)/);
+                const olMatch = line.match(/^\d+\.\s+(.+)/);
+
+                if (ulMatch) {
+                    if (inOl) {
+                        html += '</ol>';
+                        inOl = false;
+                    }
+                    if (!inUl) {
+                        html += '<ul>';
+                        inUl = true;
+                    }
+                    html += '<li>' + ulMatch[1] + '</li>';
+                    continue;
+                }
+
+                if (olMatch) {
+                    if (inUl) {
+                        html += '</ul>';
+                        inUl = false;
+                    }
+                    if (!inOl) {
+                        html += '<ol>';
+                        inOl = true;
+                    }
+                    html += '<li>' + olMatch[1] + '</li>';
+                    continue;
+                }
+
+                if (inUl) {
+                    html += '</ul>';
+                    inUl = false;
+                }
+                if (inOl) {
+                    html += '</ol>';
+                    inOl = false;
+                }
+
+                html += line === '' ? '<br>' : (line + '<br>');
             }
+
+            if (inUl) html += '</ul>';
+            if (inOl) html += '</ol>';
+
+            html = html.replace(/(<br>)+$/, '');
+            blocks.forEach((block, i) => {
+                html = html.replace('__CODEBLOCK_' + i + '__', block);
+            });
+
+            return html;
+        }
+
+        function createMsg(role, content) {
+            const el = document.createElement('article');
+            el.className = `msg ${role}`;
+            const nowIso = new Date().toISOString();
+            const safe = escapeHtml(content).replace(/\n/g, '<br>');
+            if (role === 'assistant') {
+                el.innerHTML = `<div class="avatar" aria-hidden="true"><span class="material-symbols-rounded">smart_toy</span></div><div class="wrap"><div class="bubble">${renderAssistantHtml(content)}</div><div class="meta"><time datetime="${nowIso}">${getTime()}</time><button class="icon" type="button" onclick="copyMessage(this)" aria-label="Copy response"><span class="material-symbols-rounded" style="font-size:18px;">content_copy</span></button></div></div>`;
+            } else {
+                el.innerHTML = `<div class="wrap"><div class="bubble">${safe}</div><div class="meta"><time datetime="${nowIso}">${getTime()}</time></div></div>`;
+            }
+            return el;
+        }
+
+        function addMessage(role, content) {
+            removeEmptyState();
+            const el = createMsg(role, content);
+            messageList.appendChild(el);
+            if (role === 'assistant') {
+                ensureBottom();
+            }
+            return el;
+        }
+
+        function showTyping() {
+            removeEmptyState();
+            const el = document.createElement('article');
+            el.className = 'msg assistant';
+            el.id = 'typingIndicator';
+            el.innerHTML = '<div class="avatar" aria-hidden="true"><span class="material-symbols-rounded">smart_toy</span></div><div class="wrap"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';
+            messageList.appendChild(el);
+            ensureBottom();
+            return el;
+        }
+
+        function copyMessage(btn) {
+            const bubble = btn.closest('.wrap').querySelector('.bubble');
+            const text = bubble.textContent || '';
+            navigator.clipboard.writeText(text).then(() => {
+                const icon = btn.querySelector('.material-symbols-rounded');
+                const prev = icon.textContent;
+                icon.textContent = 'check';
+                setTimeout(() => {
+                    icon.textContent = prev;
+                }, 1100);
+            }).catch(() => {});
+        }
+
+        function autoResize() {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 180) + 'px';
+        }
+
+        function saveDraft() {
+            const t = messageInput.value.trim();
+            if (t) localStorage.setItem(DRAFT_KEY, messageInput.value);
+            else localStorage.removeItem(DRAFT_KEY);
         }
 
         function restoreDraft() {
-            const draft = localStorage.getItem(DRAFT_KEY);
-            if (draft) {
-                messageInput.value = draft;
-                messageInput.style.height = 'auto';
-                messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+            const d = localStorage.getItem(DRAFT_KEY);
+            if (d) {
+                messageInput.value = d;
+                autoResize();
             }
         }
 
-        // Save draft before unloading
-        window.addEventListener('beforeunload', saveDraft);
-
-        // ===== KEYBOARD SHORTCUTS =====
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+K or Cmd+K to focus search
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                searchInput.focus();
-                searchInput.select();
-            }
-            // ? to show help (future enhancement)
-            if (e.key === '?' && !e.ctrlKey && !e.metaKey && document.activeElement !== messageInput) {
-                // Could show help modal
-            }
-        });
-
-        // ===== INITIALIZE THEME ON PAGE LOAD =====
-        function initializeTheme() {
-            const darkMode = localStorage.getItem('darkMode') === 'true';
-            const fontSize = localStorage.getItem('fontSize') || 'medium';
-            const themeColor = localStorage.getItem('themeColor') || 'blue';
-            applyTheme(darkMode, fontSize, themeColor);
-        }
-
-        // Apply theme
-        function applyTheme(darkMode, fontSize, themeColor) {
-            const root = document.documentElement;
-
-            if (darkMode) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-
-            root.style.setProperty('--font-size-multiplier',
-                fontSize === 'small' ? '0.9' : fontSize === 'large' ? '1.1' : '1');
-
-            const colorMap = {
-                'blue': '#3b82f6',
-                'green': '#10b981',
-                'purple': '#8b5cf6',
-                'orange': '#f97316',
-                'cyan': '#06b6d4'
-            };
-            root.style.setProperty('--color-primary', colorMap[themeColor]);
-        }
-
-        // ===== WELCOME MODAL =====
-        function showWelcomeModal() {
-            const hasVisited = sessionStorage.getItem('visited');
-            if (!hasVisited) {
-                const modalHTML = `
-                    <div id="welcomeModal" class="modal-overlay" onclick="closeWelcomeModal(event)">
-                        <div class="modal" style="display: block; margin: auto;" onclick="event.stopPropagation()">
-                            <div class="modal-header">
-                                <h2>Welcome to InfoBot!</h2>
-                                <button class="close-button" onclick="closeWelcomeModal()" aria-label="Close welcome modal">×</button>
-                            </div>
-                            <div class="modal-body" style="text-align: center;">
-                                <div style="font-size: 48px; margin-bottom: 16px;">
-                                    <span class="material-symbols-outlined" style="font-size: 48px;">smart_toy</span>
-                                </div>
-                                <h3 style="margin-bottom: 12px;">Hello! How can I help you today?</h3>
-                                <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                                    I'm your AI assistant. You can ask me questions, get information, or have a conversation. 
-                                    Your conversation drafts are automatically saved!
-                                </p>
-                                <div style="display: flex; gap: 8px; justify-content: center;">
-                                    <button class="btn btn-primary" onclick="closeWelcomeModal()">Get Started</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                document.body.insertAdjacentHTML('beforeend', modalHTML);
-                sessionStorage.setItem('visited', 'true');
-            }
-        }
-
-        function closeWelcomeModal(event) {
-            if (event && event.target.id !== 'welcomeModal') return;
-            const modal = document.getElementById('welcomeModal');
-            if (modal) modal.remove();
-        }
-
-        // ===== COPY MESSAGE FUNCTIONALITY =====
-        function copyMessage(btn) {
-            const messageEl = btn.closest('.message');
-            const contentEl = messageEl.querySelector('.message-content');
-            const text = contentEl.textContent;
-
-            navigator.clipboard.writeText(text).then(() => {
-                // Show feedback
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">check</span>';
-                btn.style.color = 'var(--success-color)';
-
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.style.color = 'inherit';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                alert('Failed to copy message');
-            });
-        }
-
-        // ===== INSERT PROMPT FROM SUGGESTION =====
-        function insertPrompt(text) {
+        function insertStarterPrompt(text) {
             messageInput.value = text;
-            messageInput.style.height = 'auto';
-            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+            autoResize();
+            saveDraft();
             messageInput.focus();
-            saveDraft();
         }
 
-        // ===== FAVORITE TOGGLE =====
-        function toggleFavorite(btn) {
-            const messageEl = btn.closest('.message');
-            const messageId = messageEl.dataset.messageId;
-
-            fetch(basePath + 'api/toggle_favorite.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message_id: messageId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        btn.classList.toggle('favorited');
-                        const icon = btn.querySelector('.material-symbols-outlined');
-                        if (data.action === 'added') {
-                            btn.style.color = 'var(--danger-color)';
-                            icon.style.fontVariationSettings = "'FILL' 1";
-                        } else {
-                            btn.style.color = 'inherit';
-                            icon.style.fontVariationSettings = "'FILL' 0";
-                        }
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        // ===== SEARCH MESSAGES =====
-        searchInput.addEventListener('input', function() {
-            const query = this.value.trim().toLowerCase();
-            const messages = chatMessages.querySelectorAll('.message');
-            let visibleCount = 0;
-
-            messages.forEach(msg => {
-                const content = msg.textContent.toLowerCase();
-                if (query === '' || content.includes(query)) {
-                    msg.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    msg.style.display = 'none';
-                }
-            });
-
-            // Show no results message
-            const noResults = chatMessages.querySelector('.no-search-results');
-            if (visibleCount === 0 && query) {
-                if (!noResults) {
-                    const message = document.createElement('div');
-                    message.className = 'no-search-results';
-                    message.textContent = `No messages found matching "${query}"`;
-                    chatMessages.appendChild(message);
-                }
-            } else if (noResults) {
-                noResults.remove();
-            }
-        });
-
-        // ===== FIX LOGO LINK =====
-        const logoLink = document.querySelector('.logo');
-        if (logoLink) {
-            logoLink.href = basePath + 'pages/chat.php?conversation_id=' + conversationId;
-        }
-
-        // ===== AUTO-RESIZE TEXTAREA =====
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-            saveDraft();
-        });
-
-        // ===== HANDLE ENTER KEY =====
-        messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage(e);
-            }
-        });
-
-        // ===== SEND MESSAGE FUNCTION =====
         async function sendMessage(event) {
             event.preventDefault();
+            const content = messageInput.value.trim();
+            if (!content) return;
 
-            const message = messageInput.value.trim();
-            if (!message) return;
-
-            // Disable input while sending
-            messageInput.disabled = true;
             sendButton.disabled = true;
-
-            // Add user message to chat
-            addMessage('user', message);
+            messageInput.disabled = true;
+            addMessage('user', content);
             messageInput.value = '';
-            messageInput.style.height = 'auto';
-            localStorage.removeItem(DRAFT_KEY); // Clear draft after sending
+            autoResize();
+            localStorage.removeItem(DRAFT_KEY);
 
-            // Show typing indicator
-            const typingDiv = showTypingIndicator();
+            const typing = showTyping();
 
             try {
                 const response = await fetch(basePath + 'api/chat.php', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         conversation_id: conversationId,
-                        message: message
+                        message: content
                     })
                 });
-
+                if (!response.ok) throw new Error('HTTP ' + response.status);
                 const data = await response.json();
-                typingDiv.remove();
-
+                if (typing && typing.parentNode) typing.remove();
                 if (data.success) {
-                    addMessage('bot', data.message);
+                    addMessage('assistant', data.message || '');
                 } else {
-                    addMessage('bot', 'Sorry, I encountered an error: ' + (data.error || 'Unknown error'));
+                    addMessage('assistant', 'Error: ' + (data.error || 'Unknown error'));
                 }
             } catch (error) {
-                typingDiv.remove();
-                addMessage('bot', 'Sorry, I couldn\'t connect to the server. Please try again.');
-                console.error('Error:', error);
+                if (typing && typing.parentNode) typing.remove();
+                addMessage('assistant', 'Connection issue. Please try again.');
+                console.error(error);
             }
 
             messageInput.disabled = false;
@@ -500,168 +1061,33 @@ $messages = getConversationMessages($current_conversation_id);
             messageInput.focus();
         }
 
-        // ===== ADD MESSAGE TO DISPLAY =====
-        function addMessage(role, content) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ' + role;
-            messageDiv.setAttribute('role', 'article');
-            messageDiv.setAttribute('aria-label', role === 'user' ? 'Your message' : 'Assistant message');
-
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit'
-            });
-
-            let actionButtons = '';
-            if (role === 'bot') {
-                actionButtons = `
-                    <button class="message-action-btn copy-btn" 
-                            onclick="copyMessage(this)" 
-                            title="Copy message"
-                            aria-label="Copy message to clipboard" 
-                            style="background: none; border: none; cursor: pointer; padding: 0 4px; color: inherit; font-size: 16px;">
-                        <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px;">content_copy</span>
-                    </button>
-                    <button class="message-action-btn favorite-btn" 
-                            onclick="toggleFavorite(this)" 
-                            title="Add to favorites" 
-                            aria-label="Add this message to favorites"
-                            style="background: none; border: none; cursor: pointer; padding: 0 4px; color: inherit; font-size: 16px;">
-                        <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px;">favorite</span>
-                    </button>
-                `;
-            }
-
-            messageDiv.innerHTML = `
-                <div class="message-avatar" aria-hidden="true">
-                    <span class="material-symbols-outlined">
-                        ${role === 'user' ? 'person' : 'smart_toy'}
-                    </span>
-                </div>
-                <div>
-                    <div class="message-content">${escapeHtml(content).replace(/\n/g, '<br>')}</div>
-                    <div class="message-time" style="display: flex; align-items: center; gap: 4px;">
-                        <time datetime="${new Date().toISOString()}">${timeString}</time>
-                        ${actionButtons}
-                    </div>
-                </div>
-            `;
-
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        // ===== TYPING INDICATOR =====
-        function showTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message bot';
-            typingDiv.id = 'typingIndicator';
-            typingDiv.setAttribute('aria-live', 'polite');
-            typingDiv.setAttribute('aria-label', 'Assistant is typing');
-
-            typingDiv.innerHTML = `
-                <div class="message-avatar" aria-hidden="true">
-                    <span class="material-symbols-outlined">smart_toy</span>
-                </div>
-                <div class="message-content">
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                </div>
-            `;
-
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            return typingDiv;
-        }
-
-        // ===== ESCAPE HTML =====
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // ===== LOAD CONVERSATION =====
         function loadConversation(convId) {
             window.location.href = basePath + 'pages/chat.php?conversation_id=' + convId;
         }
 
-        // ===== NEW CONVERSATION =====
         function newConversation() {
-            const btn = event.target.closest('button');
-            if (btn) btn.disabled = true;
             window.location.href = basePath + 'pages/chat.php?new=true';
         }
 
-        // ===== CLEAR CURRENT CHAT =====
-        function clearChat() {
-            if (confirm('Are you sure you want to delete this conversation? This action cannot be undone.')) {
-                fetch(basePath + 'api/delete_conversation.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            conversation_id: conversationId
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = basePath + 'pages/chat.php';
-                        } else {
-                            alert('Error deleting conversation: ' + (data.error || 'Unknown error'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error deleting conversation');
-                    });
+        messageInput.addEventListener('input', () => {
+            autoResize();
+            saveDraft();
+        });
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(e);
             }
-        }
-
-        // ===== INITIALIZE ON PAGE LOAD =====
-        initializeTheme();
+        });
+        window.addEventListener('beforeunload', saveDraft);
         restoreDraft();
-        showWelcomeModal();
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        autoResize();
+        ensureBottom();
+        document.querySelectorAll('.msg.assistant .bubble').forEach((bubble) => {
+            bubble.innerHTML = renderAssistantHtml(bubble.textContent || '');
+        });
     </script>
-    <script>
-  // Run only on screens <= 768px
-  if (window.innerWidth <= 768) {
-    // Replace all content with mobile coming soon page
-    document.body.innerHTML = `
-      <div style="
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #fff8e7;
-        text-align: center;
-        font-family: 'Roboto', sans-serif;
-        padding: 20px;
-      ">
-        <!-- Logo -->
-        <img src='https://cdn-icons-png.flaticon.com/512/565/565547.png' 
-             alt='Infobot Logo' 
-             style='width:70px; height:70px; margin-bottom:10px;'>
-
-        <!-- Name -->
-        <h1 style='font-size:2rem; font-weight:700; margin:0 0 5px 0; color:#333;'>Infobot</h1>
-
-        <!-- Under construction message -->
-        <p style='font-size:1rem; font-weight:500; color:#555;'>Under Construction</p>
-      </div>
-    `;
-  }
-</script>
-
 </body>
 
 </html>
+

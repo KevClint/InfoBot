@@ -1,32 +1,14 @@
 <?php
-/**
- * ADMIN DASHBOARD
- * 
- * Main admin panel providing overview of system statistics
- * and quick access to admin features.
- */
-
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/auth.php';
 
 requireAdmin();
 
-$user_id = getCurrentUserId();
 $conn = getDatabaseConnection();
-
-// Get statistics
-$users_query = $conn->query("SELECT COUNT(*) as count FROM users");
-$user_count = $users_query->fetch_assoc()['count'];
-
-$conversations_query = $conn->query("SELECT COUNT(*) as count FROM conversations");
-$conversation_count = $conversations_query->fetch_assoc()['count'];
-
-$messages_query = $conn->query("SELECT COUNT(*) as count FROM messages");
-$message_count = $messages_query->fetch_assoc()['count'];
-
-$kb_query = $conn->query("SELECT COUNT(*) as count FROM knowledge_base WHERE is_active = TRUE");
-$kb_count = $kb_query->fetch_assoc()['count'];
-
+$user_count = $conn->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'];
+$conversation_count = $conn->query("SELECT COUNT(*) as count FROM conversations")->fetch_assoc()['count'];
+$message_count = $conn->query("SELECT COUNT(*) as count FROM messages")->fetch_assoc()['count'];
+$kb_count = $conn->query("SELECT COUNT(*) as count FROM knowledge_base WHERE is_active = TRUE")->fetch_assoc()['count'];
 closeDatabaseConnection($conn);
 ?>
 <!DOCTYPE html>
@@ -35,120 +17,49 @@ closeDatabaseConnection($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - InfoBot</title>
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/admin.css">
     <link rel="icon" href="<?php echo BASE_PATH; ?>assets/icons/logo-robot-64px.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/premium-ui.css">
+    <script src="<?php echo BASE_PATH; ?>assets/js/theme-init.js"></script>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="<?php echo BASE_PATH; ?>pages/admin/index.php" class="logo">
-                    <span class="material-symbols-outlined">admin_panel_settings</span>
-                    InfoBot Admin
-                </a>
-                <nav class="nav">
-                    <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="nav-link">
-                        <span class="material-symbols-outlined">chat</span>
-                        <span>Chat</span>
-                    </a>
-                    <a href="<?php echo BASE_PATH; ?>pages/admin/knowledge.php" class="nav-link">
-                        <span class="material-symbols-outlined">school</span>
-                        <span>Knowledge Base</span>
-                    </a>
-                    <a href="<?php echo BASE_PATH; ?>pages/admin/index.php" class="nav-link active">
-                        <span class="material-symbols-outlined">dashboard</span>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="<?php echo BASE_PATH; ?>pages/logout.php" class="nav-link">
-                        <span class="material-symbols-outlined">logout</span>
-                        <span>Logout</span>
-                    </a>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <div class="container admin-container">
-        <div class="admin-header">
-            <h1>Admin Dashboard</h1>
-            <p>Welcome back, <strong><?php echo htmlspecialchars(getCurrentUsername()); ?></strong>!</p>
-        </div>
-
-        <!-- Statistics Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon users">
-                    <span class="material-symbols-outlined">people</span>
-                </div>
-                <div class="stat-content">
-                    <h3>Total Users</h3>
-                    <p class="stat-number"><?php echo $user_count; ?></p>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon conversations">
-                    <span class="material-symbols-outlined">chat_bubble</span>
-                </div>
-                <div class="stat-content">
-                    <h3>Conversations</h3>
-                    <p class="stat-number"><?php echo $conversation_count; ?></p>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon messages">
-                    <span class="material-symbols-outlined">message</span>
-                </div>
-                <div class="stat-content">
-                    <h3>Total Messages</h3>
-                    <p class="stat-number"><?php echo $message_count; ?></p>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon knowledge">
-                    <span class="material-symbols-outlined">lightbulb</span>
-                </div>
-                <div class="stat-content">
-                    <h3>Knowledge Base Entries</h3>
-                    <p class="stat-number"><?php echo $kb_count; ?></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="admin-section">
-            <h2>Quick Actions</h2>
-            <div class="actions-grid">
-                <a href="<?php echo BASE_PATH; ?>pages/admin/knowledge.php" class="action-button">
-                    <span class="material-symbols-outlined">add</span>
-                    Add Knowledge Entry
-                </a>
-                <a href="<?php echo BASE_PATH; ?>pages/admin/knowledge.php" class="action-button">
-                    <span class="material-symbols-outlined">edit</span>
-                    Manage Knowledge Base
-                </a>
-                <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="action-button">
-                    <span class="material-symbols-outlined">chat</span>
-                    Test Chatbot
-                </a>
-            </div>
-        </div>
+<header class="ui-header">
+    <div class="ui-header-inner">
+        <a href="<?php echo BASE_PATH; ?>pages/admin/index.php" class="ui-brand"><span class="material-symbols-rounded">admin_panel_settings</span>InfoBot Admin</a>
+        <nav class="ui-nav">
+            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/chat.php"><span class="material-symbols-rounded">chat</span>Chat</a>
+            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/admin/knowledge.php"><span class="material-symbols-rounded">school</span>Knowledge</a>
+            <a class="ui-nav-link active" href="<?php echo BASE_PATH; ?>pages/admin/index.php"><span class="material-symbols-rounded">dashboard</span>Dashboard</a>
+            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/logout.php"><span class="material-symbols-rounded">logout</span>Logout</a>
+        </nav>
     </div>
+</header>
 
-    <script>
-        // Toggle dark mode from body class
-        function loadTheme() {
-            const isDark = localStorage.getItem('darkMode') === 'true';
-            if (isDark) {
-                document.body.classList.add('dark-mode');
-            }
-        }
-        loadTheme();
-    </script>
+<main class="ui-container">
+    <section class="ui-page-head">
+        <h1 class="ui-title">Admin Dashboard</h1>
+        <p class="ui-subtitle">System overview and quick actions.</p>
+    </section>
+
+    <section class="ui-stat-grid" style="margin-bottom:14px;">
+        <article class="ui-stat"><div class="ui-stat-title">Total Users</div><div class="ui-stat-value"><?php echo (int)$user_count; ?></div></article>
+        <article class="ui-stat"><div class="ui-stat-title">Conversations</div><div class="ui-stat-value"><?php echo (int)$conversation_count; ?></div></article>
+        <article class="ui-stat"><div class="ui-stat-title">Messages</div><div class="ui-stat-value"><?php echo (int)$message_count; ?></div></article>
+        <article class="ui-stat"><div class="ui-stat-title">Active KB Entries</div><div class="ui-stat-value"><?php echo (int)$kb_count; ?></div></article>
+    </section>
+
+    <section class="ui-card">
+        <div class="ui-card-header"><h3>Quick Actions</h3></div>
+        <div class="ui-actions">
+            <a class="ui-btn primary" href="<?php echo BASE_PATH; ?>pages/admin/knowledge.php"><span class="material-symbols-rounded">add</span>Add Knowledge Entry</a>
+            <a class="ui-btn secondary" href="<?php echo BASE_PATH; ?>pages/admin/knowledge.php"><span class="material-symbols-rounded">edit</span>Manage Knowledge Base</a>
+            <a class="ui-btn secondary" href="<?php echo BASE_PATH; ?>pages/chat.php"><span class="material-symbols-rounded">chat</span>Open Chat</a>
+        </div>
+    </section>
+</main>
 </body>
 </html>
+

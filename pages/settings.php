@@ -1,11 +1,4 @@
 <?php
-/**
- * USER SETTINGS PAGE
- * 
- * Allows users to customize their experience with dark mode,
- * font size, and theme color preferences.
- */
-
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/preferences.php';
@@ -16,7 +9,6 @@ $user_id = getCurrentUserId();
 $username = getCurrentUsername();
 $prefs = getUserPreferences($user_id);
 
-// Get user's conversations
 $conn = getDatabaseConnection();
 $conversations = [];
 $stmt = $conn->prepare("SELECT id, title, created_at FROM conversations WHERE user_id = ? ORDER BY created_at DESC");
@@ -35,395 +27,230 @@ closeDatabaseConnection($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - InfoBot</title>
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
     <link rel="icon" href="<?php echo BASE_PATH; ?>assets/icons/logo-robot-64px.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/premium-ui.css">
+    <script src="<?php echo BASE_PATH; ?>assets/js/theme-init.js"></script>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="logo">
-                    <span class="material-symbols-outlined">smart_toy</span>
-                    InfoBot
-                </a>
-                <nav class="nav">
-                    <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="nav-link">
-                        <span class="material-symbols-outlined">chat</span>
-                        <span>Chat</span>
-                    </a>
-                    <a href="<?php echo BASE_PATH; ?>pages/settings.php" class="nav-link active">
-                        <span class="material-symbols-outlined">settings</span>
-                        <span>Settings</span>
-                    </a>
-                    <a href="<?php echo BASE_PATH; ?>pages/logout.php" class="nav-link">
-                        <span class="material-symbols-outlined">logout</span>
-                        <span>Logout</span>
-                    </a>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <!-- Settings Container -->
-    <div class="settings-container">
-        <div class="settings-header">
-            <h1>Settings</h1>
-            <p>Customize your experience</p>
-        </div>
-
-        <div class="settings-grid">
-            <!-- Dark Mode -->
-            <div class="settings-card">
-                <div class="settings-card-header">
-                    <h3>Appearance</h3>
-                </div>
-                <div class="settings-card-body">
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <label for="darkMode">Dark Mode</label>
-                            <p class="settings-description">Easier on the eyes in low light</p>
-                        </div>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="darkMode" <?php echo $prefs['dark_mode'] ? 'checked' : ''; ?>>
-                            <label for="darkMode" class="toggle-label"></label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Font Size -->
-            <div class="settings-card">
-                <div class="settings-card-header">
-                    <h3>Text Size</h3>
-                </div>
-                <div class="settings-card-body">
-                    <div class="settings-item">
-                        <label>Choose your preferred text size</label>
-                        <div class="font-size-options">
-                            <button class="font-size-btn <?php echo $prefs['font_size'] === 'small' ? 'active' : ''; ?>" 
-                                    onclick="changeFontSize('small')" value="small">
-                                A<small>Small</small>
-                            </button>
-                            <button class="font-size-btn <?php echo $prefs['font_size'] === 'medium' ? 'active' : ''; ?>" 
-                                    onclick="changeFontSize('medium')" value="medium">
-                                A<span>Medium</span>
-                            </button>
-                            <button class="font-size-btn <?php echo $prefs['font_size'] === 'large' ? 'active' : ''; ?>" 
-                                    onclick="changeFontSize('large')" value="large">
-                                A<big>Large</big>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Theme Color -->
-            <div class="settings-card">
-                <div class="settings-card-header">
-                    <h3>Theme Color</h3>
-                </div>
-                <div class="settings-card-body">
-                    <div class="settings-item">
-                        <label>Choose your preferred theme color</label>
-                        <div class="theme-color-options">
-                            <button class="color-btn blue <?php echo $prefs['theme_color'] === 'blue' ? 'active' : ''; ?>" 
-                                    onclick="changeThemeColor('blue')" title="Blue">
-                                <span class="color-circle" style="background-color: #3b82f6;"></span>
-                            </button>
-                            <button class="color-btn green <?php echo $prefs['theme_color'] === 'green' ? 'active' : ''; ?>" 
-                                    onclick="changeThemeColor('green')" title="Green">
-                                <span class="color-circle" style="background-color: #10b981;"></span>
-                            </button>
-                            <button class="color-btn purple <?php echo $prefs['theme_color'] === 'purple' ? 'active' : ''; ?>" 
-                                    onclick="changeThemeColor('purple')" title="Purple">
-                                <span class="color-circle" style="background-color: #8b5cf6;"></span>
-                            </button>
-                            <button class="color-btn orange <?php echo $prefs['theme_color'] === 'orange' ? 'active' : ''; ?>" 
-                                    onclick="changeThemeColor('orange')" title="Orange">
-                                <span class="color-circle" style="background-color: #f97316;"></span>
-                            </button>
-                            <button class="color-btn cyan <?php echo $prefs['theme_color'] === 'cyan' ? 'active' : ''; ?>" 
-                                    onclick="changeThemeColor('cyan')" title="Cyan">
-                                <span class="color-circle" style="background-color: #06b6d4;"></span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Data & Privacy -->
-            <div class="settings-card">
-                <div class="settings-card-header">
-                    <h3>Manage Conversations</h3>
-                </div>
-                <div class="settings-card-body">
-                    <?php if (empty($conversations)): ?>
-                        <p class="settings-description">You have no conversations yet. Start a new chat!</p>
-                    <?php else: ?>
-                        <div class="conversations-list">
-                            <?php foreach ($conversations as $conv): ?>
-                                <div class="conversation-item-settings">
-                                    <div class="conversation-info">
-                                        <h4><?php echo htmlspecialchars($conv['title']); ?></h4>
-                                        <p class="text-muted"><?php echo date('M j, Y g:i A', strtotime($conv['created_at'])); ?></p>
-                                    </div>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteConversation(<?php echo $conv['id']; ?>, '<?php echo htmlspecialchars($conv['title']); ?>')">
-                                        <span class="material-symbols-outlined">delete</span>
-                                        Delete
-                                    </button>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Data & Privacy -->
-            <div class="settings-card">
-                <div class="settings-card-header">
-                    <h3>Delete All</h3>
-                </div>
-                <div class="settings-card-body">
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <label>Delete All Conversations</label>
-                            <p class="settings-description">Permanently delete all conversations and messages</p>
-                        </div>
-                        <button class="btn btn-danger" onclick="deleteAllHistory()">
-                            <span class="material-symbols-outlined">delete_forever</span>
-                            Delete All History
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Save Confirmation -->
-        <div id="saveConfirmation" class="save-confirmation" style="display: none;">
-            <p>✓ Settings saved successfully</p>
-        </div>
+<header class="ui-header">
+    <div class="ui-header-inner">
+        <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="ui-brand">
+            <span class="material-symbols-rounded">smart_toy</span>
+            <span>InfoBot</span>
+        </a>
+        <nav class="ui-nav">
+            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/chat.php"><span class="material-symbols-rounded">chat</span>Chat</a>
+            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/manage.php"><span class="material-symbols-rounded">folder</span>Manage</a>
+            <a class="ui-nav-link active" href="<?php echo BASE_PATH; ?>pages/settings.php"><span class="material-symbols-rounded">settings</span>Settings</a>
+            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/logout.php"><span class="material-symbols-rounded">logout</span>Logout</a>
+        </nav>
     </div>
+</header>
 
-    <script>
-        const basePath = '<?php echo BASE_PATH; ?>';
-        let currentDarkMode = <?php echo $prefs['dark_mode'] ? 'true' : 'false'; ?>;
-        let currentFontSize = '<?php echo $prefs['font_size']; ?>';
-        let currentThemeColor = '<?php echo $prefs['theme_color']; ?>';
+<main class="ui-container">
+    <section class="ui-page-head">
+        <h1 class="ui-title">Settings</h1>
+        <p class="ui-subtitle">Customize appearance and manage conversation data.</p>
+    </section>
 
-        // Initialize theme on page load
-        function initializeTheme() {
-            applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
+    <section class="ui-grid cols-2">
+        <article class="ui-card">
+            <div class="ui-card-header"><h3>Appearance</h3></div>
+            <div class="ui-actions" style="justify-content:space-between;">
+                <div>
+                    <div style="font-weight:600; font-size:14px;">Dark Mode</div>
+                    <div class="ui-muted" style="font-size:13px;">Toggle low-light reading mode.</div>
+                </div>
+                <label class="ui-switch">
+                    <input type="checkbox" id="darkMode" <?php echo $prefs['dark_mode'] ? 'checked' : ''; ?>>
+                    <span class="ui-switch-slider"></span>
+                </label>
+            </div>
+        </article>
+
+        <article class="ui-card">
+            <div class="ui-card-header"><h3>Text Size</h3></div>
+            <div class="ui-option-row">
+                <button class="ui-option-btn <?php echo $prefs['font_size'] === 'small' ? 'active' : ''; ?>" onclick="changeFontSize('small', this)">Small</button>
+                <button class="ui-option-btn <?php echo $prefs['font_size'] === 'medium' ? 'active' : ''; ?>" onclick="changeFontSize('medium', this)">Medium</button>
+                <button class="ui-option-btn <?php echo $prefs['font_size'] === 'large' ? 'active' : ''; ?>" onclick="changeFontSize('large', this)">Large</button>
+            </div>
+        </article>
+
+        <article class="ui-card">
+            <div class="ui-card-header"><h3>Theme Accent</h3></div>
+            <div class="ui-option-row">
+                <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'blue' ? 'active' : ''; ?>" onclick="changeThemeColor('blue', this)">Blue</button>
+                <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'green' ? 'active' : ''; ?>" onclick="changeThemeColor('green', this)">Green</button>
+                <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'purple' ? 'active' : ''; ?>" onclick="changeThemeColor('purple', this)">Purple</button>
+                <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'orange' ? 'active' : ''; ?>" onclick="changeThemeColor('orange', this)">Orange</button>
+                <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'cyan' ? 'active' : ''; ?>" onclick="changeThemeColor('cyan', this)">Cyan</button>
+            </div>
+        </article>
+
+        <article class="ui-card">
+            <div class="ui-card-header">
+                <h3>Delete All History</h3>
+                <button class="ui-btn danger" onclick="deleteAllHistory()"><span class="material-symbols-rounded">delete_forever</span>Delete All</button>
+            </div>
+            <p class="ui-muted" style="font-size:13px;">This permanently removes all your conversations and messages.</p>
+        </article>
+    </section>
+
+    <section class="ui-card" style="margin-top:14px;">
+        <div class="ui-card-header"><h3>Your Conversations</h3></div>
+        <?php if (empty($conversations)): ?>
+            <div class="ui-empty">No conversations yet.</div>
+        <?php else: ?>
+            <div class="ui-table-wrap">
+                <table class="ui-table">
+                    <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($conversations as $conv): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($conv['title']); ?></td>
+                            <td><?php echo date('M j, Y g:i A', strtotime($conv['created_at'])); ?></td>
+                            <td>
+                                <button class="ui-btn danger sm" onclick="deleteConversation(<?php echo (int)$conv['id']; ?>, '<?php echo htmlspecialchars($conv['title'], ENT_QUOTES); ?>')">
+                                    <span class="material-symbols-rounded">delete</span>Delete
+                                </button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </section>
+
+    <div id="saveConfirmation" class="ui-alert success" style="display:none; margin-top:12px;">Settings saved.</div>
+</main>
+
+<script>
+const basePath = '<?php echo BASE_PATH; ?>';
+let currentDarkMode = <?php echo $prefs['dark_mode'] ? 'true' : 'false'; ?>;
+let currentFontSize = '<?php echo $prefs['font_size']; ?>';
+let currentThemeColor = '<?php echo $prefs['theme_color']; ?>';
+
+function applyTheme(darkMode, fontSize, themeColor) {
+    const root = document.documentElement;
+    const colorMap = { blue: '#3b82f6', green: '#10b981', purple: '#8b5cf6', orange: '#f97316', cyan: '#06b6d4' };
+    const accent = colorMap[themeColor] || '#4f46e5';
+    const sizeMap = { small: '14px', medium: '15px', large: '17px' };
+
+    root.style.setProperty('--font-size-base', sizeMap[fontSize] || '15px');
+    root.style.setProperty('--accent', accent);
+    root.style.setProperty('--accent-hover', accent);
+    root.style.setProperty('--accent-soft', hexToRgba(accent, 0.14));
+
+    document.documentElement.classList.toggle('dark-mode', !!darkMode);
+    document.body.classList.toggle('dark-mode', !!darkMode);
+    localStorage.setItem('darkMode', darkMode ? 'true' : 'false');
+    localStorage.setItem('fontSize', fontSize);
+    localStorage.setItem('themeColor', themeColor);
+}
+
+function savePreferences(darkMode, fontSize, themeColor) {
+    fetch(basePath + 'api/save_preferences.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dark_mode: darkMode, font_size: fontSize, theme_color: themeColor })
+    })
+    .then(r => r.json())
+    .then(data => { if (data.success) showSaveConfirmation(); });
+}
+
+function showSaveConfirmation() {
+    const el = document.getElementById('saveConfirmation');
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 2200);
+}
+
+document.getElementById('darkMode').addEventListener('change', function() {
+    currentDarkMode = this.checked;
+    savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
+    applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
+});
+
+function changeFontSize(size, btn) {
+    currentFontSize = size;
+    document.querySelectorAll('.ui-option-btn').forEach(x => {
+        if (x.textContent.toLowerCase() === 'small' || x.textContent.toLowerCase() === 'medium' || x.textContent.toLowerCase() === 'large') x.classList.remove('active');
+    });
+    btn.classList.add('active');
+    savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
+    applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
+}
+
+function changeThemeColor(color, btn) {
+    currentThemeColor = color;
+    document.querySelectorAll('.ui-option-btn').forEach(x => {
+        const t = x.textContent.toLowerCase();
+        if (['blue','green','purple','orange','cyan'].includes(t)) x.classList.remove('active');
+    });
+    btn.classList.add('active');
+    savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
+    applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
+}
+
+function hexToRgba(hex, alpha) {
+    const clean = (hex || '').replace('#', '');
+    if (clean.length !== 6) return 'rgba(79, 70, 229, ' + alpha + ')';
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
+}
+
+function deleteAllHistory() {
+    if (!confirm('Delete ALL conversations and messages permanently?')) return;
+    if (!confirm('Final confirmation: continue deleting all history?')) return;
+
+    fetch(basePath + 'api/delete_all_conversations.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('All conversations deleted.');
+            window.location.href = basePath + 'pages/chat.php';
+        } else {
+            alert('Error: ' + (data.error || 'Failed to delete history'));
         }
+    })
+    .catch(() => alert('An error occurred while deleting history.'));
+}
 
-        // Apply theme
-        function applyTheme(darkMode, fontSize, themeColor) {
-            const root = document.documentElement;
-            
-            // Dark mode
-            if (darkMode) {
-                document.body.classList.add('dark-mode');
-                localStorage.setItem('darkMode', 'true');
-            } else {
-                document.body.classList.remove('dark-mode');
-                localStorage.setItem('darkMode', 'false');
-            }
+function deleteConversation(convId, convTitle) {
+    if (!confirm('Delete conversation "' + convTitle + '"?')) return;
 
-            // Font size
-            root.style.setProperty('--font-size-multiplier', 
-                fontSize === 'small' ? '0.9' : fontSize === 'large' ? '1.1' : '1');
-            localStorage.setItem('fontSize', fontSize);
+    fetch(basePath + 'api/delete_conversation.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation_id: convId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) location.reload();
+        else alert('Error: ' + (data.error || 'Failed to delete conversation'));
+    })
+    .catch(() => alert('An error occurred while deleting the conversation.'));
+}
 
-            // Theme color
-            const colorMap = {
-                'blue': '#3b82f6',
-                'green': '#10b981',
-                'purple': '#8b5cf6',
-                'orange': '#f97316',
-                'cyan': '#06b6d4'
-            };
-            root.style.setProperty('--color-primary', colorMap[themeColor]);
-            localStorage.setItem('themeColor', themeColor);
-        }
-
-        // Toggle dark mode
-        document.getElementById('darkMode').addEventListener('change', function() {
-            currentDarkMode = this.checked;
-            savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
-            applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
-        });
-
-        // Change font size
-        function changeFontSize(size) {
-            currentFontSize = size;
-            savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
-            applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
-            document.querySelectorAll('.font-size-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.font-size-btn').classList.add('active');
-        }
-
-        // Change theme color
-        function changeThemeColor(color) {
-            currentThemeColor = color;
-            savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
-            applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
-            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.color-btn').classList.add('active');
-        }
-
-        // Save preferences to server
-        function savePreferences(darkMode, fontSize, themeColor) {
-            fetch(basePath + 'api/save_preferences.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    dark_mode: darkMode,
-                    font_size: fontSize,
-                    theme_color: themeColor
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showSaveConfirmation();
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Show save confirmation
-        function showSaveConfirmation() {
-            const confirmation = document.getElementById('saveConfirmation');
-            confirmation.style.display = 'block';
-            setTimeout(() => {
-                confirmation.style.display = 'none';
-            }, 3000);
-        }
-
-        // Delete all message history
-        function deleteAllHistory() {
-            if (!confirm('Are you sure you want to delete ALL conversations and messages? This action cannot be undone.')) {
-                return;
-            }
-
-            if (!confirm('This is your final warning. All data will be permanently deleted. Continue?')) {
-                return;
-            }
-
-            fetch(basePath + 'api/delete_all_conversations.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('All conversations and messages have been deleted.');
-                    window.location.href = basePath + 'pages/chat.php';
-                } else {
-                    alert('Error: ' + (data.error || 'Failed to delete history'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while deleting history.');
-            });
-        }
-
-        // Delete single conversation
-        function deleteConversation(convId, convTitle) {
-            if (!confirm(`Are you sure you want to delete the conversation "${convTitle}"? This action cannot be undone.`)) {
-                return;
-            }
-
-            fetch(basePath + 'api/delete_conversation.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    conversation_id: convId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Conversation deleted successfully.');
-                    location.reload();
-                } else {
-                    alert('Error: ' + (data.error || 'Failed to delete conversation'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while deleting the conversation.');
-            });
-        }
-
-        // Initialize on page load
-        initializeTheme();
-    </script>
-
-    <style>
-        .conversations-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .conversation-item-settings {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            border: 1px solid var(--border-color, #e5e7eb);
-        }
-
-        .conversation-item-settings:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .conversation-info {
-            flex: 1;
-        }
-
-        .conversation-info h4 {
-            margin: 0 0 4px 0;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-            word-break: break-word;
-        }
-
-        .conversation-info p {
-            margin: 0;
-            font-size: 12px;
-            color: var(--text-secondary, #666);
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 13px;
-            min-width: auto;
-            white-space: nowrap;
-            margin-left: 12px;
-        }
-
-        .btn-sm .material-symbols-outlined {
-            font-size: 18px;
-        }
-
-        .text-muted {
-            color: var(--text-secondary, #999);
-        }
-    </style>
+applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
+</script>
 </body>
 </html>
+

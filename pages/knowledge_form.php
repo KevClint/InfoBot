@@ -1,34 +1,22 @@
 <?php
-/**
- * KNOWLEDGE BASE FORM PAGE
- * 
- * This page allows users to add new or edit existing
- * knowledge base entries (CRUD - Create & Update).
- */
-
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 
-// Require user to be logged in
-requireLogin();
+requireAdmin();
 
 $user_id = getCurrentUserId();
 $error = '';
-$success = '';
-
-// Check if editing existing entry
 $editing = false;
 $entry = null;
 
 if (isset($_GET['id'])) {
     $kb_id = intval($_GET['id']);
     $conn = getDatabaseConnection();
-    
     $stmt = $conn->prepare("SELECT * FROM knowledge_base WHERE id = ? AND created_by = ?");
     $stmt->bind_param("ii", $kb_id, $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 1) {
         $entry = $result->fetch_assoc();
         $editing = true;
@@ -36,52 +24,44 @@ if (isset($_GET['id'])) {
         header('Location: ' . BASE_PATH . 'pages/manage.php');
         exit();
     }
-    
+
     $stmt->close();
     closeDatabaseConnection($conn);
 }
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $question = sanitizeInput($_POST['question'] ?? '');
     $answer = sanitizeInput($_POST['answer'] ?? '');
     $category = sanitizeInput($_POST['category'] ?? 'General');
-    
-    // Validate inputs
+
     if (empty($question) || empty($answer)) {
         $error = 'Question and answer are required.';
     } else {
         $conn = getDatabaseConnection();
-        
+
         if ($editing) {
-            // Update existing entry
             $kb_id = intval($_POST['id']);
             $stmt = $conn->prepare("UPDATE knowledge_base SET question = ?, answer = ?, category = ? WHERE id = ? AND created_by = ?");
             $stmt->bind_param("sssii", $question, $answer, $category, $kb_id, $user_id);
-            
             if ($stmt->execute()) {
                 $stmt->close();
                 closeDatabaseConnection($conn);
                 header('Location: ' . BASE_PATH . 'pages/manage.php?success=knowledge_updated');
                 exit();
-            } else {
-                $error = 'Failed to update entry.';
             }
+            $error = 'Failed to update entry.';
         } else {
-            // Create new entry
             $stmt = $conn->prepare("INSERT INTO knowledge_base (question, answer, category, created_by) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("sssi", $question, $answer, $category, $user_id);
-            
             if ($stmt->execute()) {
                 $stmt->close();
                 closeDatabaseConnection($conn);
                 header('Location: ' . BASE_PATH . 'pages/manage.php?success=knowledge_added');
                 exit();
-            } else {
-                $error = 'Failed to create entry.';
             }
+            $error = 'Failed to create entry.';
         }
-        
+
         $stmt->close();
         closeDatabaseConnection($conn);
     }
@@ -92,114 +72,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $editing ? 'Edit' : 'Add'; ?> Knowledge Entry - AI Chatbot</title>
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/style.css">
+    <title><?php echo $editing ? 'Edit' : 'Add'; ?> Knowledge Entry - InfoBot</title>
     <link rel="icon" href="<?php echo BASE_PATH; ?>assets/icons/logo-robot-64px.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/premium-ui.css">
+    <script src="<?php echo BASE_PATH; ?>assets/js/theme-init.js"></script>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="logo">
-                    <span class="material-symbols-outlined">smart_toy</span>
-                    AI Chatbot
-                </a>
-                <nav class="nav">
-                    <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="nav-link">
-                        <span class="material-symbols-outlined">chat</span>
-                        <span>Chat</span>
-                    </a>
-                    <a href="<?php echo BASE_PATH; ?>pages/manage.php" class="nav-link active">
-                        <span class="material-symbols-outlined">folder</span>
-                        <span>Manage</span>
-                    </a>
-                    <a href="<?php echo BASE_PATH; ?>pages/logout.php" class="nav-link">
-                        <span class="material-symbols-outlined">logout</span>
-                        <span>Logout</span>
-                    </a>
-                </nav>
-            </div>
-        </div>
-    </header>
+<header class="ui-header">
+    <div class="ui-header-inner">
+        <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="ui-brand"><span class="material-symbols-rounded">smart_toy</span>InfoBot</a>
+        <nav class="ui-nav">
+            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/chat.php"><span class="material-symbols-rounded">chat</span>Chat</a>
+            <a class="ui-nav-link active" href="<?php echo BASE_PATH; ?>pages/manage.php"><span class="material-symbols-rounded">folder</span>Manage</a>
+            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/logout.php"><span class="material-symbols-rounded">logout</span>Logout</a>
+        </nav>
+    </div>
+</header>
 
-    <div class="container" style="padding-top: 32px; padding-bottom: 32px; max-width: 800px;">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 class="page-title">
-                <a href="<?php echo BASE_PATH; ?>pages/manage.php" style="color: inherit; text-decoration: none;">
-                    <span class="material-symbols-outlined" style="vertical-align: middle;">arrow_back</span>
-                </a>
-                <?php echo $editing ? 'Edit' : 'Add New'; ?> Knowledge Entry
-            </h1>
-            <p class="page-subtitle">
-                <?php echo $editing ? 'Update the question and answer below' : 'Add a new Q&A pair to the knowledge base'; ?>
-            </p>
-        </div>
+<main class="ui-container" style="max-width:860px;">
+    <section class="ui-page-head">
+        <h1 class="ui-title"><?php echo $editing ? 'Edit' : 'Add New'; ?> Knowledge Entry</h1>
+        <p class="ui-subtitle"><?php echo $editing ? 'Update the existing question and answer.' : 'Create a new question and answer pair for the bot.'; ?></p>
+    </section>
 
-        <div class="card">
-            <?php if ($error): ?>
-                <div class="alert alert-error">
-                    <span class="material-symbols-outlined">error</span>
-                    <?php echo $error; ?>
-                </div>
+    <section class="ui-card">
+        <?php if ($error): ?>
+            <div class="ui-alert error"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+
+        <form method="POST" action="">
+            <?php if ($editing): ?>
+                <input type="hidden" name="id" value="<?php echo (int)$entry['id']; ?>">
             <?php endif; ?>
 
-            <form method="POST" action="">
-                <?php if ($editing): ?>
-                    <input type="hidden" name="id" value="<?php echo $entry['id']; ?>">
-                <?php endif; ?>
+            <div class="ui-form-group">
+                <label class="ui-form-label" for="question">Question</label>
+                <input class="ui-input" type="text" id="question" name="question" required value="<?php echo htmlspecialchars($entry['question'] ?? ''); ?>" placeholder="Enter the question">
+            </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="question">Question</label>
-                    <input 
-                        type="text" 
-                        id="question" 
-                        name="question" 
-                        class="form-input" 
-                        placeholder="Enter the question..."
-                        value="<?php echo htmlspecialchars($entry['question'] ?? ''); ?>"
-                        required
-                    >
-                </div>
+            <div class="ui-form-group">
+                <label class="ui-form-label" for="answer">Answer</label>
+                <textarea class="ui-textarea" id="answer" name="answer" required placeholder="Enter the answer"><?php echo htmlspecialchars($entry['answer'] ?? ''); ?></textarea>
+            </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="answer">Answer</label>
-                    <textarea 
-                        id="answer" 
-                        name="answer" 
-                        class="form-input" 
-                        rows="6"
-                        placeholder="Enter the answer..."
-                        required
-                    ><?php echo htmlspecialchars($entry['answer'] ?? ''); ?></textarea>
-                </div>
+            <div class="ui-form-group">
+                <label class="ui-form-label" for="category">Category</label>
+                <input class="ui-input" type="text" id="category" name="category" value="<?php echo htmlspecialchars($entry['category'] ?? 'General'); ?>" placeholder="General, Technical, FAQ...">
+            </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="category">Category</label>
-                    <input 
-                        type="text" 
-                        id="category" 
-                        name="category" 
-                        class="form-input" 
-                        placeholder="e.g., General, Technical, FAQ"
-                        value="<?php echo htmlspecialchars($entry['category'] ?? 'General'); ?>"
-                    >
-                </div>
-
-                <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                    <a href="<?php echo BASE_PATH; ?>pages/manage.php" class="btn btn-secondary">
-                        Cancel
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <span class="material-symbols-outlined">
-                            <?php echo $editing ? 'save' : 'add'; ?>
-                        </span>
-                        <?php echo $editing ? 'Update' : 'Create'; ?> Entry
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div class="ui-actions" style="justify-content:flex-end;">
+                <a href="<?php echo BASE_PATH; ?>pages/manage.php" class="ui-btn secondary">Cancel</a>
+                <button type="submit" class="ui-btn primary"><span class="material-symbols-rounded"><?php echo $editing ? 'save' : 'add'; ?></span><?php echo $editing ? 'Update' : 'Create'; ?> Entry</button>
+            </div>
+        </form>
+    </section>
+</main>
 </body>
 </html>
+
