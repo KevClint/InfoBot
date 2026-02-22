@@ -78,21 +78,181 @@ if (isset($_GET['success'])) {
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="<?php echo BASE_PATH; ?>assets/css/premium-ui.css">
     <script src="<?php echo BASE_PATH; ?>assets/js/theme-init.js"></script>
+    <style>
+        .app-shell {
+            min-height: 100vh;
+            display: block;
+        }
+
+        .side-panel {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 288px;
+            min-width: 288px;
+            background: linear-gradient(180deg, #020617 0%, #020b2a 100%);
+            color: #e5e7eb;
+            border-right: 1px solid rgba(148, 163, 184, .22);
+            box-shadow: inset -1px 0 0 rgba(255, 255, 255, .03);
+            display: flex;
+            flex-direction: column;
+            z-index: 40;
+            overflow-y: auto;
+        }
+
+        .side-head {
+            padding: 16px 14px 12px;
+            border-bottom: 1px solid rgba(148, 163, 184, .18);
+        }
+
+        .side-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #f8fafc;
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 12px;
+        }
+
+        .side-links {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .side-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+
+        .side-link:hover {
+            background: rgba(30, 41, 59, .75);
+            color: #f8fafc;
+            border-color: rgba(148, 163, 184, .34);
+        }
+
+        .side-link.active {
+            background: rgba(30, 41, 59, .95);
+            color: #f8fafc;
+            border-color: rgba(99, 102, 241, .55);
+        }
+
+        .side-foot {
+            border-top: 1px solid rgba(148, 163, 184, .2);
+            padding: 10px;
+            background: rgba(2, 6, 23, .45);
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .15s;
+            z-index: 35;
+        }
+
+        .overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mobile-top {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--line);
+            padding: 10px 14px;
+            background: rgba(248, 250, 252, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            backdrop-filter: blur(8px);
+        }
+
+        .menu-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .page-main {
+            margin-left: 288px;
+            min-height: 100vh;
+        }
+
+        .page-main .ui-container {
+            max-width: 1120px;
+            padding-top: 24px;
+        }
+
+        @media (max-width: 960px) {
+            .mobile-top {
+                display: flex;
+            }
+
+            .side-panel {
+                transform: translateX(-100%);
+                transition: transform .18s;
+                box-shadow: 0 20px 40px rgba(2, 6, 23, .45);
+            }
+
+            .side-panel.open {
+                transform: translateX(0);
+            }
+
+            .page-main {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-<header class="ui-header">
-    <div class="ui-header-inner">
-        <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="ui-brand"><span class="material-symbols-rounded">smart_toy</span>InfoBot</a>
-        <nav class="ui-nav">
-            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/chat.php"><span class="material-symbols-rounded">chat</span>Chat</a>
-            <a class="ui-nav-link active" href="<?php echo BASE_PATH; ?>pages/manage.php"><span class="material-symbols-rounded">folder</span>Manage</a>
-            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/settings.php"><span class="material-symbols-rounded">settings</span>Settings</a>
-            <a class="ui-nav-link" href="<?php echo BASE_PATH; ?>pages/logout.php"><span class="material-symbols-rounded">logout</span>Logout</a>
+<div class="app-shell">
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+    <aside class="side-panel">
+        <div class="side-head">
+            <a href="<?php echo BASE_PATH; ?>pages/chat.php" class="side-brand">
+                <span class="material-symbols-rounded">smart_toy</span>
+                <span>InfoBot</span>
+            </a>
+        </div>
+        <nav class="side-links">
+            <a class="side-link" href="<?php echo BASE_PATH; ?>pages/chat.php"><span class="material-symbols-rounded">chat</span><span>Chat</span></a>
+            <?php if ($is_admin): ?>
+                <a class="side-link" href="<?php echo BASE_PATH; ?>pages/admin/index.php"><span class="material-symbols-rounded">admin_panel_settings</span><span>Admin</span></a>
+            <?php endif; ?>
         </nav>
-    </div>
-</header>
+        <div class="side-foot">
+            <a class="side-link active" href="<?php echo BASE_PATH; ?>pages/manage.php"><span class="material-symbols-rounded">folder</span><span>Manage</span></a>
+            <a class="side-link" href="<?php echo BASE_PATH; ?>pages/settings.php"><span class="material-symbols-rounded">settings</span><span>Settings</span></a>
+            <a class="side-link" href="<?php echo BASE_PATH; ?>pages/logout.php"><span class="material-symbols-rounded">logout</span><span>Logout</span></a>
+        </div>
+    </aside>
 
-<main class="ui-container">
+    <main class="page-main">
+<div class="mobile-top">
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Open navigation"><span class="material-symbols-rounded">menu</span></button>
+    <strong>Manage</strong>
+</div>
+<div class="ui-container">
     <section class="ui-page-head">
         <h1 class="ui-title">Manage Workspace</h1>
         <p class="ui-subtitle">Review and manage your conversations.</p>
@@ -180,7 +340,30 @@ if (isset($_GET['success'])) {
         <?php endif; ?>
     </section>
     <?php endif; ?>
-</main>
+    </div>
+    </main>
+</div>
+<script>
+const sidebar = document.querySelector('.side-panel');
+const overlay = document.getElementById('overlay');
+const menuBtn = document.getElementById('menuBtn');
+
+function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+}
+
+function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+}
+
+if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+if (overlay) overlay.addEventListener('click', closeSidebar);
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 960) closeSidebar();
+});
+</script>
 </body>
 </html>
 
