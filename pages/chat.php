@@ -659,15 +659,15 @@ foreach ($conversations as $conv) {
         .jump-latest-btn {
             width: 40px;
             height: 40px;
-            border: 1px solid #15803d;
+            border: 1px solid color-mix(in srgb, var(--accent) 70%, #1f2937 30%);
             border-radius: 999px;
-            background: #22c55e;
+            background: var(--accent);
             color: #f8fafc;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 10px 24px rgba(34, 197, 94, .35), 0 0 0 2px rgba(255, 255, 255, .9);
+            box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 0 2px rgba(255, 255, 255, .9);
             opacity: 1;
             transform: translateY(0);
             pointer-events: auto;
@@ -675,8 +675,8 @@ foreach ($conversations as $conv) {
         }
 
         .jump-latest-btn:hover {
-            border-color: #166534;
-            background: #16a34a;
+            border-color: color-mix(in srgb, var(--accent-h) 75%, #1f2937 25%);
+            background: var(--accent-h);
             color: #f8fafc
         }
 
@@ -1114,8 +1114,8 @@ foreach ($conversations as $conv) {
         }
 
         html.dark-mode .jump-latest-btn {
-            background: #16a34a;
-            border-color: #15803d;
+            background: var(--accent);
+            border-color: color-mix(in srgb, var(--accent) 75%, #0f172a 25%);
             color: #f8fafc;
             box-shadow: 0 10px 24px rgba(0, 0, 0, .4), 0 0 0 2px rgba(15, 23, 42, .7)
         }
