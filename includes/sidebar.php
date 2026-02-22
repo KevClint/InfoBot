@@ -242,6 +242,15 @@ function renderAppSidebar(array $options = []): void
             padding-top: 10px;
         }
 
+        .side-primary {
+            padding: 10px;
+            border-bottom: 1px solid rgba(148, 163, 184, .18);
+        }
+
+        .sidebar .side-foot {
+            margin-top: auto;
+        }
+
         .side-tools-head {
             padding: 2px 2px 8px;
             font-size: calc(10px * var(--font-scale, 1));
@@ -392,6 +401,10 @@ function renderAppSidebar(array $options = []): void
             <?php endif; ?>
         </div>
 
+        <div class="side-primary">
+            <a class="side-link<?php echo $chatActive; ?>" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/chat.php"><span class="material-symbols-rounded">chat</span><span>Chat</span></a>
+        </div>
+
         <?php if ($showRecent): ?>
             <div class="conv-list">
                 <div class="conv-head-row">
@@ -444,7 +457,6 @@ function renderAppSidebar(array $options = []): void
             <?php if ($userRole === 'admin'): ?>
                 <a class="side-link" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/admin/index.php"><span class="material-symbols-rounded">admin_panel_settings</span><span>Admin</span></a>
             <?php endif; ?>
-            <a class="side-link<?php echo $chatActive; ?>" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/chat.php"><span class="material-symbols-rounded">chat</span><span>Chat</span></a>
             <a class="side-link<?php echo $settingsActive; ?>" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/settings.php"><span class="material-symbols-rounded">settings</span><span>Settings</span></a>
             <a class="side-link" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/logout.php"><span class="material-symbols-rounded">logout</span><span>Logout</span></a>
         </div>
@@ -693,11 +705,37 @@ function renderAppSidebar(array $options = []): void
                 const hfConfigured = sidebar.getAttribute('data-hf-configured') === 'true';
 
                 if (selectedProvider === 'api') {
-                    setStatusWidget(apiConfigured ? 'online' : 'offline', apiConfigured ? 'Groq: Online' : 'Groq: Not Configured', apiModel);
+                    if (!apiConfigured) {
+                        setStatusWidget('offline', 'Groq: Not Configured', apiModel);
+                        return;
+                    }
+                    setStatusWidget('pending', 'Groq: Checking...', apiModel);
+                    fetch(basePath + 'api/provider_status.php?provider=api', { cache: 'no-store' })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            const online = !!(data && data.success && data.configured && data.online);
+                            setStatusWidget(online ? 'online' : 'offline', online ? 'Groq: Running' : 'Groq: Not Running', apiModel);
+                        })
+                        .catch(() => {
+                            setStatusWidget('offline', 'Groq: Not Running', apiModel);
+                        });
                     return;
                 }
                 if (selectedProvider === 'hf') {
-                    setStatusWidget(hfConfigured ? 'online' : 'offline', hfConfigured ? 'HF: Online' : 'HF: Not Configured', hfModel);
+                    if (!hfConfigured) {
+                        setStatusWidget('offline', 'HF: Not Configured', hfModel);
+                        return;
+                    }
+                    setStatusWidget('pending', 'HF: Checking...', hfModel);
+                    fetch(basePath + 'api/provider_status.php?provider=hf', { cache: 'no-store' })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            const online = !!(data && data.success && data.configured && data.online);
+                            setStatusWidget(online ? 'online' : 'offline', online ? 'HF: Running' : 'HF: Not Running', hfModel);
+                        })
+                        .catch(() => {
+                            setStatusWidget('offline', 'HF: Not Running', hfModel);
+                        });
                     return;
                 }
 
@@ -708,10 +746,10 @@ function renderAppSidebar(array $options = []): void
                     .then((response) => response.json())
                     .then((data) => {
                         const online = !!(data && data.success && data.online);
-                        setStatusWidget(online ? 'online' : 'offline', online ? 'Ollama: Online' : 'Ollama: Offline', chosenLocalModel);
+                        setStatusWidget(online ? 'online' : 'offline', online ? 'Ollama: Running' : 'Ollama: Not Running', chosenLocalModel);
                     })
                     .catch(() => {
-                        setStatusWidget('offline', 'Ollama: Offline', chosenLocalModel);
+                        setStatusWidget('offline', 'Ollama: Not Running', chosenLocalModel);
                     });
             }
 

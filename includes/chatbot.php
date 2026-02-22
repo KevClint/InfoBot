@@ -129,8 +129,9 @@ function getHuggingFaceChatbotResponse($messages) {
         'Content-Type: application/json',
         'Authorization: Bearer ' . HF_API_KEY
     ));
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 8);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 180);
+    // Vision models can take noticeably longer, especially on first token.
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 12);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 300);
 
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);

@@ -649,39 +649,41 @@ foreach ($conversations as $conv) {
         }
 
         .jump-latest-wrap {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 6px;
+            position: fixed;
+            right: 28px;
+            bottom: 112px;
+            z-index: 55;
             pointer-events: none
         }
 
         .jump-latest-btn {
-            width: 34px;
-            height: 34px;
-            border: 1px solid var(--line);
+            width: 40px;
+            height: 40px;
+            border: 1px solid #15803d;
             border-radius: 999px;
-            background: #fff;
-            color: var(--sub);
+            background: #22c55e;
+            color: #f8fafc;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: var(--shadow);
-            opacity: 0;
-            transform: translateY(6px);
-            pointer-events: none;
+            box-shadow: 0 10px 24px rgba(34, 197, 94, .35), 0 0 0 2px rgba(255, 255, 255, .9);
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
             transition: opacity .16s ease, transform .16s ease, border-color .16s ease
         }
 
-        .jump-latest-btn.show {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto
+        .jump-latest-btn:hover {
+            border-color: #166534;
+            background: #16a34a;
+            color: #f8fafc
         }
 
-        .jump-latest-btn:hover {
-            border-color: #cbd5e1;
-            color: var(--text)
+        .jump-latest-btn.hide {
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none
         }
 
         .composer {
@@ -1048,7 +1050,8 @@ foreach ($conversations as $conv) {
             }
 
             .jump-latest-wrap {
-                margin-bottom: 4px
+                right: 14px;
+                bottom: 102px
             }
         }
 
@@ -1104,11 +1107,17 @@ foreach ($conversations as $conv) {
 
         html.dark-mode .provider-btn,
         html.dark-mode .composer-icon,
-        html.dark-mode .jump-latest-btn,
         html.dark-mode .provider-menu {
             background: var(--panel);
             border-color: var(--line);
             color: var(--text)
+        }
+
+        html.dark-mode .jump-latest-btn {
+            background: #16a34a;
+            border-color: #15803d;
+            color: #f8fafc;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .4), 0 0 0 2px rgba(15, 23, 42, .7)
         }
 
         html.dark-mode .provider-option:hover {
@@ -1339,7 +1348,7 @@ foreach ($conversations as $conv) {
                 icon: 'hub',
                 requestProvider: 'hf',
                 localModel: '',
-                supportsAttachments: false,
+                supportsAttachments: true,
                 supportsVoice: false
             },
             local_llama: {
@@ -1397,7 +1406,7 @@ foreach ($conversations as $conv) {
 
             if (attachButton) {
                 attachButton.disabled = isGenerating || !attachmentsAllowed;
-                attachButton.title = attachmentsAllowed ? 'Attach image' : 'Images are available only with Local Gemma 3 (4B).';
+                attachButton.title = attachmentsAllowed ? 'Attach image' : 'Images are available only with Local Gemma 3 (4B) or HF vision models.';
             }
             if (voiceButton) {
                 voiceButton.disabled = isGenerating || !voiceAllowed;
@@ -1446,7 +1455,7 @@ foreach ($conversations as $conv) {
 
         if (menuBtn) menuBtn.addEventListener('click', openSidebar);
         if (sidebarCollapseBtn) sidebarCollapseBtn.addEventListener('click', toggleSidebarCollapsed);
-        if (jumpLatestBtn) jumpLatestBtn.addEventListener('click', ensureBottom);
+        if (jumpLatestBtn) jumpLatestBtn.addEventListener('click', jumpToLatest);
         if (overlay) overlay.addEventListener('click', closeSidebar);
         window.addEventListener('resize', () => {
             if (window.innerWidth > 960) closeSidebar();
@@ -1455,20 +1464,57 @@ foreach ($conversations as $conv) {
         if (chatScroll) {
             chatScroll.addEventListener('scroll', updateJumpLatestVisibility);
         }
+        window.addEventListener('scroll', updateJumpLatestVisibility, {
+            passive: true
+        });
 
         function scrollToBottom() {
+            if (!chatScroll) return;
             chatScroll.scrollTop = chatScroll.scrollHeight;
         }
 
-        function isNearBottom() {
-            if (!chatScroll) return true;
-            const threshold = 64;
-            return (chatScroll.scrollHeight - chatScroll.scrollTop - chatScroll.clientHeight) <= threshold;
+        function isNearBottom(threshold = 64) {
+            if (chatScroll && chatScroll.scrollHeight > (chatScroll.clientHeight + 4)) {
+                return (chatScroll.scrollHeight - chatScroll.scrollTop - chatScroll.clientHeight) <= threshold;
+            }
+            const doc = document.documentElement;
+            if (!doc) return true;
+            return (doc.scrollHeight - window.scrollY - window.innerHeight) <= threshold;
         }
 
         function updateJumpLatestVisibility() {
             if (!jumpLatestBtn) return;
-            jumpLatestBtn.classList.toggle('show', !isNearBottom());
+            jumpLatestBtn.classList.toggle('hide', isNearBottom(10));
+        }
+
+        function jumpToLatest() {
+            if (!chatScroll) return;
+            const assistantMessages = messageList ? Array.from(messageList.querySelectorAll('.msg.assistant')) : [];
+            const latestAssistant = assistantMessages.reverse().find((node) => node && node.id !== 'typingIndicator') || null;
+            const target = latestAssistant || messageEnd;
+            if (target && typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'end'
+                });
+            }
+            // Fallback for containers where scrollIntoView does not target the intended scroller.
+            requestAnimationFrame(() => {
+                if (!latestAssistant) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight;
+                    return;
+                }
+                const lowPoint = (latestAssistant.offsetTop + latestAssistant.offsetHeight) - chatScroll.clientHeight + 20;
+                chatScroll.scrollTop = Math.max(0, lowPoint);
+            });
+            setTimeout(() => {
+                if (!latestAssistant) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight;
+                    return;
+                }
+                const lowPoint = (latestAssistant.offsetTop + latestAssistant.offsetHeight) - chatScroll.clientHeight + 20;
+                chatScroll.scrollTop = Math.max(0, lowPoint);
+            }, 120);
         }
 
         let bottomFrame = null;
@@ -1477,7 +1523,7 @@ foreach ($conversations as $conv) {
             if (bottomFrame !== null) return;
             bottomFrame = requestAnimationFrame(() => {
                 bottomFrame = null;
-                chatScroll.scrollTop = chatScroll.scrollHeight;
+                scrollToBottom();
                 updateJumpLatestVisibility();
             });
         }
@@ -1840,25 +1886,29 @@ foreach ($conversations as $conv) {
             return el;
         }
 
-        function addMessage(role, content) {
+        function addMessage(role, content, options = {}) {
+            const autoScroll = !!options.autoScroll;
             removeEmptyState();
             const el = createMsg(role, content);
             messageList.appendChild(el);
-            if (role === 'assistant') {
+            if (autoScroll) {
                 ensureBottom();
             }
             updateJumpLatestVisibility();
             return el;
         }
 
-        function showTyping() {
+        function showTyping(options = {}) {
+            const autoScroll = !!options.autoScroll;
             removeEmptyState();
             const el = document.createElement('article');
             el.className = 'msg assistant';
             el.id = 'typingIndicator';
             el.innerHTML = '<div class="avatar" aria-hidden="true"><span class="material-symbols-rounded">smart_toy</span></div><div class="wrap"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';
             messageList.appendChild(el);
-            ensureBottom();
+            if (autoScroll) {
+                ensureBottom();
+            }
             updateJumpLatestVisibility();
             return el;
         }
@@ -1928,13 +1978,18 @@ foreach ($conversations as $conv) {
                 speechRecognizer.stop();
             }
 
-            addMessage('user', getUserPreviewContent(content, attachmentsPayload.length));
+            const shouldStickToBottom = isNearBottom(180);
+            addMessage('user', getUserPreviewContent(content, attachmentsPayload.length), {
+                autoScroll: true
+            });
             messageInput.value = '';
             autoResize();
             localStorage.removeItem(DRAFT_KEY);
             clearAttachments();
 
-            const typing = showTyping();
+            const typing = showTyping({
+                autoScroll: shouldStickToBottom
+            });
             activeController = new AbortController();
             setComposerGeneratingState(true);
 
@@ -1966,7 +2021,9 @@ foreach ($conversations as $conv) {
                 }
                 if (typing && typing.parentNode) typing.remove();
                 if (data.success) {
-                    addMessage('assistant', data.message || '');
+                    addMessage('assistant', data.message || '', {
+                        autoScroll: shouldStickToBottom
+                    });
                     if (attachmentsPayload.length > 0 && data.attachments_used !== true) {
                         setComposerHint('Images were attached but not used by the selected model.', true);
                     } else {
@@ -1981,11 +2038,15 @@ foreach ($conversations as $conv) {
             } catch (error) {
                 if (typing && typing.parentNode) typing.remove();
                 if (error && error.name === 'AbortError') {
-                    addMessage('assistant', 'Generation stopped.');
+                    addMessage('assistant', 'Generation stopped.', {
+                        autoScroll: shouldStickToBottom
+                    });
                     resetComposerHint();
                 } else {
                     const detail = error && error.message ? error.message : 'Connection issue. Please try again.';
-                    addMessage('assistant', 'Error: ' + detail);
+                    addMessage('assistant', 'Error: ' + detail, {
+                        autoScroll: shouldStickToBottom
+                    });
                     setComposerHint(detail, true);
                     console.error(error);
                 }
