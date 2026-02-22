@@ -367,6 +367,68 @@ function getConversationMessages($conversation_id) {
 }
 
 /**
+ * Get total message count for a conversation.
+ *
+ * @param int $conversation_id Conversation ID
+ * @return int
+ */
+function getConversationMessageCount($conversation_id) {
+    $conn = getDatabaseConnection();
+
+    $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM messages WHERE conversation_id = ?");
+    $stmt->bind_param("i", $conversation_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $total = 0;
+    if ($row = $result->fetch_assoc()) {
+        $total = (int)($row['total'] ?? 0);
+    }
+
+    $stmt->close();
+    closeDatabaseConnection($conn);
+
+    return $total;
+}
+
+/**
+ * Get a paged window of conversation messages ordered chronologically.
+ *
+ * @param int $conversation_id Conversation ID
+ * @param int $limit Max rows to return
+ * @param int $offset Offset into newest-first list
+ * @return array
+ */
+function getConversationMessagesPage($conversation_id, $limit = 80, $offset = 0) {
+    $limit = max(1, (int)$limit);
+    $offset = max(0, (int)$offset);
+
+    $conn = getDatabaseConnection();
+
+    $sql = "SELECT role, content, created_at
+            FROM messages
+            WHERE conversation_id = ?
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iii", $conversation_id, $limit, $offset);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $messages = array();
+
+    while ($row = $result->fetch_assoc()) {
+        $messages[] = $row;
+    }
+
+    $stmt->close();
+    closeDatabaseConnection($conn);
+
+    // Query returns newest-first; reverse so UI stays oldest -> newest.
+    return array_reverse($messages);
+}
+
+/**
  * Get user's conversations
  * 
  * @param int $user_id User ID

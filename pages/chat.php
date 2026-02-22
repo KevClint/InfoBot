@@ -13,6 +13,8 @@ $user_role = getCurrentUserRole();
 $conversations = getUserConversations($user_id);
 $current_conversation_id = isset($_GET['conversation_id']) ? intval($_GET['conversation_id']) : null;
 $create_new = isset($_GET['new']) && $_GET['new'] === 'true';
+$message_page_size = 80;
+$older_chunk_count = isset($_GET['msg_offset']) ? max(0, intval($_GET['msg_offset'])) : 0;
 
 if (!$current_conversation_id) {
     if ($create_new || empty($conversations)) {
@@ -26,7 +28,11 @@ if (!$current_conversation_id) {
     exit();
 }
 
-$messages = getConversationMessages($current_conversation_id);
+$total_message_count = getConversationMessageCount($current_conversation_id);
+$visible_window_size = $message_page_size + $older_chunk_count;
+$messages = getConversationMessagesPage($current_conversation_id, $visible_window_size, 0);
+$has_older_messages = count($messages) < $total_message_count;
+$older_offset = $older_chunk_count + $message_page_size;
 $current_conversation_title = 'Conversation';
 foreach ($conversations as $conv) {
     if ((int)($conv['id'] ?? 0) === (int)$current_conversation_id) {
@@ -527,6 +533,30 @@ foreach ($conversations as $conv) {
             flex-direction: column;
             gap: 18px;
             padding-bottom: 16px
+        }
+
+        .older-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+
+        .older-btn {
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--sub);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            font-size: calc(13px * var(--font-scale, 1));
+        }
+
+        .older-btn:hover {
+            border-color: #cbd5e1;
+            color: var(--text);
         }
 
         .msg {
@@ -1077,7 +1107,8 @@ foreach ($conversations as $conv) {
         html.dark-mode .chip,
         html.dark-mode .avatar,
         html.dark-mode .starter-card,
-        html.dark-mode .card {
+        html.dark-mode .card,
+        html.dark-mode .older-btn {
             background: var(--panel);
             color: var(--text);
             border-color: var(--line)
@@ -1198,7 +1229,7 @@ foreach ($conversations as $conv) {
 
             <section class="scroll" id="chatScroll">
                 <div class="stage">
-                    <?php if (empty($messages)): ?>
+                    <?php if ($total_message_count === 0): ?>
                         <div class="empty" id="emptyState">
                             <h1>Welcome to InfoBot</h1>
                             <p>Ask anything. Draft, summarize, brainstorm, or debug in one place.</p>
@@ -1216,6 +1247,15 @@ foreach ($conversations as $conv) {
                                     <div class="csub">Trace errors and suggest production-safe fixes.</div>
                                 </button>
                             </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($has_older_messages): ?>
+                        <div class="older-wrap">
+                            <a class="older-btn" href="<?php echo BASE_PATH; ?>pages/chat.php?conversation_id=<?php echo (int)$current_conversation_id; ?>&msg_offset=<?php echo (int)$older_offset; ?>">
+                                <span class="material-symbols-rounded">history</span>
+                                <span>Load older messages</span>
+                            </a>
                         </div>
                     <?php endif; ?>
 

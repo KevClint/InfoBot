@@ -243,8 +243,25 @@ function renderAppSidebar(array $options = []): void
         }
 
         .side-primary {
+            display: none;
             padding: 10px;
             border-bottom: 1px solid rgba(148, 163, 184, .18);
+        }
+
+        body.sidebar-collapsed .side-primary {
+            display: block;
+        }
+
+        .side-link-chat-top {
+            display: none;
+        }
+
+        body.sidebar-collapsed .side-link-chat-top {
+            display: flex;
+        }
+
+        body.sidebar-collapsed .side-link-chat-bottom {
+            display: none;
         }
 
         .sidebar .side-foot {
@@ -402,7 +419,7 @@ function renderAppSidebar(array $options = []): void
         </div>
 
         <div class="side-primary">
-            <a class="side-link<?php echo $chatActive; ?>" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/chat.php"><span class="material-symbols-rounded">chat</span><span>Chat</span></a>
+            <a class="side-link side-link-chat-top<?php echo $chatActive; ?>" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/chat.php"><span class="material-symbols-rounded">chat</span><span>Chat</span></a>
         </div>
 
         <?php if ($showRecent): ?>
@@ -457,6 +474,7 @@ function renderAppSidebar(array $options = []): void
             <?php if ($userRole === 'admin'): ?>
                 <a class="side-link" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/admin/index.php"><span class="material-symbols-rounded">admin_panel_settings</span><span>Admin</span></a>
             <?php endif; ?>
+            <a class="side-link side-link-chat-bottom<?php echo $chatActive; ?>" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/chat.php"><span class="material-symbols-rounded">chat</span><span>Chat</span></a>
             <a class="side-link<?php echo $settingsActive; ?>" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/settings.php"><span class="material-symbols-rounded">settings</span><span>Settings</span></a>
             <a class="side-link" href="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>pages/logout.php"><span class="material-symbols-rounded">logout</span><span>Logout</span></a>
         </div>
