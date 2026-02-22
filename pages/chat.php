@@ -639,7 +639,7 @@ foreach ($conversations as $conv) {
         .composer-shell {
             position: sticky;
             bottom: 0;
-            padding: 16px 20px 18px;
+            padding: 14px 20px 16px;
             background: linear-gradient(to top, rgba(248, 250, 252, 1) 64%, rgba(248, 250, 252, .7) 86%, rgba(248, 250, 252, 0))
         }
 
@@ -648,15 +648,120 @@ foreach ($conversations as $conv) {
             margin: 0 auto
         }
 
+        .jump-latest-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 6px;
+            pointer-events: none
+        }
+
+        .jump-latest-btn {
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--sub);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none;
+            transition: opacity .16s ease, transform .16s ease, border-color .16s ease
+        }
+
+        .jump-latest-btn.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto
+        }
+
+        .jump-latest-btn:hover {
+            border-color: #cbd5e1;
+            color: var(--text)
+        }
+
         .composer {
             border: 1px solid var(--line);
             border-radius: 18px;
             background: #fff;
             box-shadow: var(--shadow);
-            padding: 10px;
+            padding: 8px;
             display: flex;
-            gap: 10px;
-            align-items: flex-end
+            flex-direction: column;
+            gap: 6px;
+            align-items: stretch;
+            overflow: visible
+        }
+
+        .composer-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            min-width: 0
+        }
+
+        .attachment-tray {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height .18s ease, opacity .18s ease;
+            min-width: 0
+        }
+
+        .composer.has-attachments .attachment-tray {
+            max-height: 94px;
+            opacity: 1
+        }
+
+        .attachment-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            min-width: 0;
+            scrollbar-width: thin
+        }
+
+        .attachment-item {
+            width: 82px;
+            height: 82px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+            flex: 0 0 auto;
+            position: relative;
+            background: #f8fafc
+        }
+
+        .attachment-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block
+        }
+
+        .attachment-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, .78);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer
+        }
+
+        .attachment-remove .material-symbols-rounded {
+            font-size: calc(14px * var(--font-scale, 1))
         }
 
         .provider-switch {
@@ -665,17 +770,17 @@ foreach ($conversations as $conv) {
         }
 
         .provider-btn {
-            height: 38px;
+            height: 34px;
             border: 1px solid var(--line);
-            border-radius: 10px;
+            border-radius: 9px;
             background: #fff;
             color: var(--sub);
-            padding: 0 10px;
+            padding: 0 9px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            font-size: calc(13px * var(--font-scale, 1));
+            font-size: calc(12px * var(--font-scale, 1));
             font-weight: 600
         }
 
@@ -697,7 +802,7 @@ foreach ($conversations as $conv) {
 
         .provider-menu {
             position: absolute;
-            bottom: 46px;
+            bottom: 40px;
             left: 0;
             width: 210px;
             border: 1px solid var(--line);
@@ -750,19 +855,50 @@ foreach ($conversations as $conv) {
             gap: 8px
         }
 
+        .composer-icon {
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            background: #fff;
+            color: var(--sub);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex: 0 0 auto
+        }
+
+        .composer-icon:hover {
+            border-color: #cbd5e1;
+            color: var(--text)
+        }
+
+        .composer-icon:disabled {
+            opacity: .5;
+            cursor: not-allowed
+        }
+
+        .voice-btn.listening {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, .45);
+            background: rgba(254, 226, 226, .75)
+        }
+
         .composer textarea {
             flex: 1;
             border: 0;
             background: transparent;
             resize: none;
             outline: none;
-            min-height: 24px;
-            max-height: 180px;
+            min-height: 20px;
+            max-height: 160px;
             font-family: 'Inter', sans-serif;
             font-size: calc(15px * var(--font-scale, 1));
             color: var(--text);
-            line-height: 1.5;
-            padding: 6px 4px
+            line-height: 1.4;
+            padding: 4px 2px;
+            min-width: 0
         }
 
         .composer textarea::placeholder {
@@ -770,10 +906,10 @@ foreach ($conversations as $conv) {
         }
 
         .send {
-            width: 38px;
-            height: 38px;
+            width: 34px;
+            height: 34px;
             border: 0;
-            border-radius: 10px;
+            border-radius: 9px;
             background: var(--accent);
             color: #fff;
             display: flex;
@@ -787,16 +923,15 @@ foreach ($conversations as $conv) {
             background: var(--accent-h)
         }
 
-        .send:disabled {
-            opacity: .45;
-            cursor: not-allowed
-        }
-
         .hint {
             margin-top: 8px;
             font-size: calc(12px * var(--font-scale, 1));
             color: #94a3b8;
             text-align: center
+        }
+
+        .hint.error {
+            color: #ef4444
         }
 
         pre,
@@ -895,6 +1030,26 @@ foreach ($conversations as $conv) {
             .top-center {
                 max-width: 56vw
             }
+
+            .composer {
+                padding: 7px
+            }
+
+            .composer-row {
+                gap: 6px
+            }
+
+            .provider-btn {
+                padding: 0 8px
+            }
+
+            .provider-label {
+                max-width: 62px
+            }
+
+            .jump-latest-wrap {
+                margin-bottom: 4px
+            }
         }
 
         html.dark-mode {
@@ -948,6 +1103,8 @@ foreach ($conversations as $conv) {
         }
 
         html.dark-mode .provider-btn,
+        html.dark-mode .composer-icon,
+        html.dark-mode .jump-latest-btn,
         html.dark-mode .provider-menu {
             background: var(--panel);
             border-color: var(--line);
@@ -973,6 +1130,15 @@ foreach ($conversations as $conv) {
 
         html.dark-mode .composer textarea::placeholder {
             color: var(--sub)
+        }
+
+        html.dark-mode .attachment-item {
+            background: rgba(15, 23, 42, .55);
+            border-color: var(--line)
+        }
+
+        html.dark-mode .attachment-remove {
+            background: rgba(2, 6, 23, .85)
         }
 
         html.dark-mode .conv:hover {
@@ -1064,28 +1230,55 @@ foreach ($conversations as $conv) {
 
             <div class="composer-shell">
                 <div class="composer-stage">
+                    <div class="jump-latest-wrap">
+                        <button class="jump-latest-btn" id="jumpLatestBtn" type="button" aria-label="Jump to latest message">
+                            <span class="material-symbols-rounded">keyboard_arrow_down</span>
+                        </button>
+                    </div>
                     <form class="composer" onsubmit="sendMessage(event)">
-                        <div class="provider-switch">
-                            <button class="provider-btn" id="providerButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="providerMenu">
-                                <span class="material-symbols-rounded" id="providerIcon" style="font-size: calc(18px * var(--font-scale, 1));">cloud</span>
-                                <span class="provider-label" id="providerLabel">API</span>
-                                <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">expand_more</span>
-                            </button>
-                            <div class="provider-menu" id="providerMenu" role="menu">
-                                <button class="provider-option" type="button" data-provider="api" role="menuitem">
-                                    <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">cloud</span><span>API (Groq)</span></span>
-                                    <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">check</span>
-                                </button>
-                                <button class="provider-option" type="button" data-provider="local" role="menuitem">
-                                    <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">memory</span><span>Local (Ollama)</span></span>
-                                    <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">check</span>
-                                </button>
-                            </div>
+                        <div class="attachment-tray" id="attachmentTray" aria-live="polite">
+                            <div class="attachment-scroll" id="attachmentScroll"></div>
                         </div>
-                        <textarea id="messageInput" rows="1" placeholder="Message InfoBot..." aria-label="Type a message"></textarea>
-                        <button class="send" id="sendButton" type="submit" aria-label="Send"><span class="material-symbols-rounded">north_east</span></button>
+                        <div class="composer-row">
+                            <div class="provider-switch">
+                                <button class="provider-btn" id="providerButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="providerMenu">
+                                    <span class="material-symbols-rounded" id="providerIcon" style="font-size: calc(18px * var(--font-scale, 1));">cloud</span>
+                                    <span class="provider-label" id="providerLabel">API</span>
+                                    <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">expand_more</span>
+                                </button>
+                                <div class="provider-menu" id="providerMenu" role="menu">
+                                    <button class="provider-option" type="button" data-provider="api" role="menuitem">
+                                        <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">cloud</span><span>API (Groq)</span></span>
+                                        <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">check</span>
+                                    </button>
+                                    <button class="provider-option" type="button" data-provider="hf" role="menuitem">
+                                        <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">hub</span><span>API (Hugging Face)</span></span>
+                                        <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">check</span>
+                                    </button>
+                                    <button class="provider-option" type="button" data-provider="local_llama" role="menuitem">
+                                        <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">memory</span><span>Local (Llama 3.2)</span></span>
+                                        <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">check</span>
+                                    </button>
+                                    <button class="provider-option" type="button" data-provider="local_gemma" role="menuitem">
+                                        <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">image</span><span>Local (Gemma 3 4B)</span></span>
+                                        <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">check</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <input id="attachmentInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+                            <button class="composer-icon attach-btn" id="attachButton" type="button" aria-label="Attach image">
+                                <span class="material-symbols-rounded">attach_file</span>
+                            </button>
+                            <textarea id="messageInput" rows="1" placeholder="Message InfoBot..." aria-label="Type a message"></textarea>
+                            <button class="composer-icon voice-btn" id="voiceButton" type="button" aria-label="Voice input">
+                                <span class="material-symbols-rounded" id="voiceIcon">mic</span>
+                            </button>
+                            <button class="send" id="sendButton" type="submit" aria-label="Send">
+                                <span class="material-symbols-rounded" id="sendIcon">north_east</span>
+                            </button>
+                        </div>
                     </form>
-                    <div class="hint">Enter to send, Shift + Enter for new line</div>
+                    <div class="hint" id="composerHint">Enter to send, Shift + Enter for new line</div>
                 </div>
             </div>
         </main>
@@ -1100,8 +1293,18 @@ foreach ($conversations as $conv) {
         const menuBtn = document.getElementById('menuBtn');
         const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
         const sidebarCollapseIcon = document.getElementById('sidebarCollapseIcon');
+        const composerForm = document.querySelector('.composer');
         const messageInput = document.getElementById('messageInput');
+        const attachmentInput = document.getElementById('attachmentInput');
+        const attachButton = document.getElementById('attachButton');
+        const attachmentTray = document.getElementById('attachmentTray');
+        const attachmentScroll = document.getElementById('attachmentScroll');
+        const voiceButton = document.getElementById('voiceButton');
+        const voiceIcon = document.getElementById('voiceIcon');
         const sendButton = document.getElementById('sendButton');
+        const sendIcon = document.getElementById('sendIcon');
+        const jumpLatestBtn = document.getElementById('jumpLatestBtn');
+        const composerHint = document.getElementById('composerHint');
         const emptyState = document.getElementById('emptyState');
         const messageList = document.getElementById('messageList');
         const messageEnd = document.getElementById('messageEnd');
@@ -1115,19 +1318,100 @@ foreach ($conversations as $conv) {
         const QUICK_PROMPT_KEY = 'infobot_quick_prompt';
         const PROVIDER_KEY = 'infobot_provider';
         const SIDEBAR_COLLAPSE_KEY = 'infobot_sidebar_collapsed';
+        const MAX_ATTACHMENTS = 4;
+        const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+        const ALLOWED_ATTACHMENT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        const LOCAL_LLAMA_MODEL = '<?php echo htmlspecialchars(LLM_MODEL_LLAMA); ?>';
+        const LOCAL_GEMMA_MODEL = '<?php echo htmlspecialchars(LLM_MODEL_GEMMA); ?>';
         const PROVIDER_META = {
             api: {
                 short: 'API',
                 label: 'API (<?php echo htmlspecialchars(GROQ_MODEL); ?>)',
-                icon: 'cloud'
+                icon: 'cloud',
+                requestProvider: 'api',
+                localModel: '',
+                supportsAttachments: false,
+                supportsVoice: false
             },
-            local: {
-                short: 'Local',
-                label: 'Local (<?php echo htmlspecialchars(LLM_MODEL); ?>)',
-                icon: 'memory'
+            hf: {
+                short: 'HF',
+                label: 'HF (<?php echo htmlspecialchars(HF_MODEL); ?>)',
+                icon: 'hub',
+                requestProvider: 'hf',
+                localModel: '',
+                supportsAttachments: false,
+                supportsVoice: false
+            },
+            local_llama: {
+                short: 'Llama',
+                label: 'Local (' + LOCAL_LLAMA_MODEL + ')',
+                icon: 'memory',
+                requestProvider: 'local',
+                localModel: LOCAL_LLAMA_MODEL,
+                supportsAttachments: false,
+                supportsVoice: false
+            },
+            local_gemma: {
+                short: 'Gemma',
+                label: 'Local (' + LOCAL_GEMMA_MODEL + ')',
+                icon: 'image',
+                requestProvider: 'local',
+                localModel: LOCAL_GEMMA_MODEL,
+                supportsAttachments: true,
+                supportsVoice: true
             }
         };
         let selectedProvider = 'api';
+        let selectedAttachments = [];
+        let isGenerating = false;
+        let activeController = null;
+        let speechRecognizer = null;
+        let voiceSupportedByBrowser = false;
+        let isListening = false;
+
+        function setComposerHint(message, isError = false) {
+            if (!composerHint) return;
+            composerHint.textContent = message;
+            composerHint.classList.toggle('error', !!isError);
+        }
+
+        function resetComposerHint() {
+            setComposerHint('Enter to send, Shift + Enter for new line', false);
+        }
+
+        function currentProviderMeta() {
+            return PROVIDER_META[selectedProvider] || PROVIDER_META.api;
+        }
+
+        function canUseAttachments() {
+            return !!currentProviderMeta().supportsAttachments;
+        }
+
+        function canUseVoice() {
+            return !!currentProviderMeta().supportsVoice && !!voiceSupportedByBrowser;
+        }
+
+        function refreshInputCapabilities() {
+            const attachmentsAllowed = canUseAttachments();
+            const voiceAllowed = canUseVoice();
+
+            if (attachButton) {
+                attachButton.disabled = isGenerating || !attachmentsAllowed;
+                attachButton.title = attachmentsAllowed ? 'Attach image' : 'Images are available only with Local Gemma 3 (4B).';
+            }
+            if (voiceButton) {
+                voiceButton.disabled = isGenerating || !voiceAllowed;
+                voiceButton.title = voiceAllowed ? 'Voice input' : (voiceSupportedByBrowser ? 'Voice is available only with Local Gemma 3 (4B).' : 'Voice input not supported in this browser');
+            }
+
+            if (!attachmentsAllowed && selectedAttachments.length > 0) {
+                clearAttachments();
+            }
+
+            if (!voiceAllowed && isListening && speechRecognizer) {
+                speechRecognizer.stop();
+            }
+        }
 
         function openSidebar() {
             sidebar.classList.add('open');
@@ -1162,13 +1446,29 @@ foreach ($conversations as $conv) {
 
         if (menuBtn) menuBtn.addEventListener('click', openSidebar);
         if (sidebarCollapseBtn) sidebarCollapseBtn.addEventListener('click', toggleSidebarCollapsed);
+        if (jumpLatestBtn) jumpLatestBtn.addEventListener('click', ensureBottom);
         if (overlay) overlay.addEventListener('click', closeSidebar);
         window.addEventListener('resize', () => {
             if (window.innerWidth > 960) closeSidebar();
+            updateJumpLatestVisibility();
         });
+        if (chatScroll) {
+            chatScroll.addEventListener('scroll', updateJumpLatestVisibility);
+        }
 
         function scrollToBottom() {
             chatScroll.scrollTop = chatScroll.scrollHeight;
+        }
+
+        function isNearBottom() {
+            if (!chatScroll) return true;
+            const threshold = 64;
+            return (chatScroll.scrollHeight - chatScroll.scrollTop - chatScroll.clientHeight) <= threshold;
+        }
+
+        function updateJumpLatestVisibility() {
+            if (!jumpLatestBtn) return;
+            jumpLatestBtn.classList.toggle('show', !isNearBottom());
         }
 
         let bottomFrame = null;
@@ -1178,6 +1478,7 @@ foreach ($conversations as $conv) {
             bottomFrame = requestAnimationFrame(() => {
                 bottomFrame = null;
                 chatScroll.scrollTop = chatScroll.scrollHeight;
+                updateJumpLatestVisibility();
             });
         }
 
@@ -1198,6 +1499,211 @@ foreach ($conversations as $conv) {
             if (emptyState && emptyState.parentNode) emptyState.remove();
         }
 
+        function setComposerGeneratingState(generating) {
+            isGenerating = generating;
+            if (sendIcon) {
+                sendIcon.textContent = generating ? 'stop' : 'north_east';
+            }
+            if (sendButton) {
+                sendButton.setAttribute('aria-label', generating ? 'Stop generating' : 'Send');
+            }
+            if (providerButton) providerButton.disabled = generating;
+            if (attachmentInput) attachmentInput.disabled = generating;
+            if (messageInput) messageInput.disabled = generating;
+            refreshInputCapabilities();
+        }
+
+        function renderAttachmentTray() {
+            if (!composerForm || !attachmentTray || !attachmentScroll) return;
+
+            attachmentScroll.innerHTML = '';
+            const hasAttachments = selectedAttachments.length > 0;
+            composerForm.classList.toggle('has-attachments', hasAttachments);
+
+            if (!hasAttachments) return;
+
+            selectedAttachments.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'attachment-item';
+
+                const img = document.createElement('img');
+                img.src = item.previewUrl;
+                img.alt = item.name || 'Attachment preview';
+                card.appendChild(img);
+
+                const remove = document.createElement('button');
+                remove.className = 'attachment-remove';
+                remove.type = 'button';
+                remove.setAttribute('aria-label', 'Remove attachment');
+                remove.innerHTML = '<span class="material-symbols-rounded">close</span>';
+                remove.addEventListener('click', () => {
+                    selectedAttachments = selectedAttachments.filter((x) => x.id !== item.id);
+                    renderAttachmentTray();
+                });
+                card.appendChild(remove);
+
+                attachmentScroll.appendChild(card);
+            });
+        }
+
+        function buildAttachmentPayload() {
+            return selectedAttachments.map((item) => ({
+                name: item.name,
+                mime: item.mime,
+                base64: item.base64
+            }));
+        }
+
+        function clearAttachments() {
+            selectedAttachments = [];
+            if (attachmentInput) attachmentInput.value = '';
+            renderAttachmentTray();
+        }
+
+        function fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result || ''));
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function addAttachmentFiles(fileList) {
+            if (!canUseAttachments()) {
+                clearAttachments();
+                setComposerHint('Images are available only with Local Gemma 3 (4B).', true);
+                return;
+            }
+            if (!fileList || fileList.length === 0) return;
+
+            const incoming = Array.from(fileList);
+            let added = 0;
+            for (const file of incoming) {
+                if (selectedAttachments.length >= MAX_ATTACHMENTS) break;
+                if (!file || !ALLOWED_ATTACHMENT_TYPES.includes(file.type)) continue;
+                if (file.size > MAX_ATTACHMENT_BYTES) continue;
+
+                try {
+                    const dataUrl = await fileToDataUrl(file);
+                    const splitIndex = dataUrl.indexOf(',');
+                    const base64 = splitIndex >= 0 ? dataUrl.slice(splitIndex + 1) : '';
+                    if (!base64) continue;
+
+                    selectedAttachments.push({
+                        id: Date.now() + Math.floor(Math.random() * 100000),
+                        name: file.name || 'image',
+                        mime: file.type,
+                        base64: base64,
+                        previewUrl: dataUrl
+                    });
+                    added++;
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            renderAttachmentTray();
+            if (added > 0) {
+                resetComposerHint();
+            } else {
+                setComposerHint('No valid images added (jpg/png/webp/gif, up to 5MB each).', true);
+            }
+        }
+
+        function getUserPreviewContent(text, attachmentCount) {
+            const clean = text.trim();
+            if (!attachmentCount) return clean;
+            const label = attachmentCount === 1 ? '[Image attached]' : '[' + attachmentCount + ' images attached]';
+            return clean ? (clean + '\n\n' + label) : label;
+        }
+
+        function stopGeneration() {
+            if (!isGenerating) return;
+            if (activeController) {
+                activeController.abort();
+            }
+        }
+
+        function updateVoiceButtonState(listening) {
+            isListening = listening;
+            if (voiceButton) {
+                voiceButton.classList.toggle('listening', listening);
+                voiceButton.setAttribute('aria-label', listening ? 'Stop voice input' : 'Voice input');
+            }
+            if (voiceIcon) {
+                voiceIcon.textContent = listening ? 'mic_off' : 'mic';
+            }
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            voiceSupportedByBrowser = !!SpeechRecognition;
+            if (!SpeechRecognition || !voiceButton) {
+                if (voiceButton) {
+                    voiceButton.disabled = true;
+                    voiceButton.title = 'Voice input not supported in this browser';
+                }
+                setComposerHint('Voice input is not supported in this browser.', true);
+                return;
+            }
+
+            speechRecognizer = new SpeechRecognition();
+            speechRecognizer.lang = 'en-US';
+            speechRecognizer.continuous = false;
+            speechRecognizer.interimResults = false;
+
+            speechRecognizer.onresult = (event) => {
+                let finalText = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0] ? event.results[i][0].transcript : '';
+                    if (event.results[i].isFinal) finalText += transcript;
+                }
+
+                const nextText = finalText.trim();
+                if (!nextText) return;
+                const prefix = messageInput.value.trim();
+                messageInput.value = prefix ? (prefix + (prefix.endsWith(' ') ? '' : ' ') + nextText) : nextText;
+                autoResize();
+                saveDraft();
+                resetComposerHint();
+            };
+
+            speechRecognizer.onerror = (event) => {
+                const code = event && event.error ? String(event.error) : 'unknown';
+                if (code === 'not-allowed' || code === 'service-not-allowed') {
+                    setComposerHint('Microphone permission denied. Allow mic access and try again.', true);
+                } else if (code === 'no-speech') {
+                    setComposerHint('No speech detected. Try again.', true);
+                } else {
+                    setComposerHint('Voice input failed (' + code + ').', true);
+                }
+                updateVoiceButtonState(false);
+            };
+
+            speechRecognizer.onend = () => {
+                updateVoiceButtonState(false);
+            };
+        }
+
+        function toggleVoiceInput() {
+            if (!speechRecognizer || isGenerating || !canUseVoice()) return;
+            if (isListening) {
+                speechRecognizer.stop();
+                updateVoiceButtonState(false);
+                resetComposerHint();
+                return;
+            }
+            try {
+                speechRecognizer.start();
+                updateVoiceButtonState(true);
+                setComposerHint('Listening... Speak now.', false);
+            } catch (e) {
+                updateVoiceButtonState(false);
+                setComposerHint('Could not start voice input.', true);
+            }
+        }
+
         function setProvider(provider) {
             const nextProvider = PROVIDER_META[provider] ? provider : 'api';
             selectedProvider = nextProvider;
@@ -1214,6 +1720,13 @@ foreach ($conversations as $conv) {
             });
 
             localStorage.setItem(PROVIDER_KEY, nextProvider);
+            refreshInputCapabilities();
+            if (!canUseAttachments()) {
+                clearAttachments();
+            }
+            if (!canUseVoice() && isListening && speechRecognizer) {
+                speechRecognizer.stop();
+            }
             try {
                 window.dispatchEvent(new CustomEvent('infobot:provider-changed', {
                     detail: {
@@ -1237,7 +1750,7 @@ foreach ($conversations as $conv) {
 
         function restoreProvider() {
             const saved = localStorage.getItem(PROVIDER_KEY);
-            setProvider(saved && PROVIDER_META[saved] ? saved : 'api');
+            setProvider(saved && PROVIDER_META[saved] ? saved : 'local_gemma');
         }
 
         function renderAssistantHtml(text) {
@@ -1334,6 +1847,7 @@ foreach ($conversations as $conv) {
             if (role === 'assistant') {
                 ensureBottom();
             }
+            updateJumpLatestVisibility();
             return el;
         }
 
@@ -1345,6 +1859,7 @@ foreach ($conversations as $conv) {
             el.innerHTML = '<div class="avatar" aria-hidden="true"><span class="material-symbols-rounded">smart_toy</span></div><div class="wrap"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';
             messageList.appendChild(el);
             ensureBottom();
+            updateJumpLatestVisibility();
             return el;
         }
 
@@ -1363,7 +1878,7 @@ foreach ($conversations as $conv) {
 
         function autoResize() {
             messageInput.style.height = 'auto';
-            messageInput.style.height = Math.min(messageInput.scrollHeight, 180) + 'px';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 160) + 'px';
         }
 
         function saveDraft() {
@@ -1400,18 +1915,28 @@ foreach ($conversations as $conv) {
 
         async function sendMessage(event) {
             event.preventDefault();
-            const content = messageInput.value.trim();
-            if (!content) return;
+            if (isGenerating) {
+                stopGeneration();
+                return;
+            }
 
-            sendButton.disabled = true;
-            messageInput.disabled = true;
-            providerButton.disabled = true;
-            addMessage('user', content);
+            const content = messageInput.value.trim();
+            const meta = currentProviderMeta();
+            const attachmentsPayload = canUseAttachments() ? buildAttachmentPayload() : [];
+            if (!content && attachmentsPayload.length === 0) return;
+            if (isListening && speechRecognizer) {
+                speechRecognizer.stop();
+            }
+
+            addMessage('user', getUserPreviewContent(content, attachmentsPayload.length));
             messageInput.value = '';
             autoResize();
             localStorage.removeItem(DRAFT_KEY);
+            clearAttachments();
 
             const typing = showTyping();
+            activeController = new AbortController();
+            setComposerGeneratingState(true);
 
             try {
                 const response = await fetch(basePath + 'api/chat.php', {
@@ -1419,30 +1944,56 @@ foreach ($conversations as $conv) {
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    signal: activeController.signal,
                     body: JSON.stringify({
                         conversation_id: conversationId,
                         message: content,
-                        provider: selectedProvider
+                        provider: meta.requestProvider,
+                        local_model: meta.localModel,
+                        attachments: attachmentsPayload
                     })
                 });
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const data = await response.json();
+                let data = null;
+                const rawText = await response.text();
+                try {
+                    data = rawText ? JSON.parse(rawText) : null;
+                } catch (e) {
+                    data = null;
+                }
+                if (!response.ok) {
+                    const detail = data && data.error ? data.error : ('HTTP ' + response.status);
+                    throw new Error(detail);
+                }
                 if (typing && typing.parentNode) typing.remove();
                 if (data.success) {
                     addMessage('assistant', data.message || '');
+                    if (attachmentsPayload.length > 0 && data.attachments_used !== true) {
+                        setComposerHint('Images were attached but not used by the selected model.', true);
+                    } else {
+                        resetComposerHint();
+                    }
                 } else {
                     addMessage('assistant', 'Error: ' + (data.error || 'Unknown error'));
+                    if (attachmentsPayload.length > 0) {
+                        setComposerHint('Image request failed. Switch to a vision-capable model.', true);
+                    }
                 }
             } catch (error) {
                 if (typing && typing.parentNode) typing.remove();
-                addMessage('assistant', 'Connection issue. Please try again.');
-                console.error(error);
+                if (error && error.name === 'AbortError') {
+                    addMessage('assistant', 'Generation stopped.');
+                    resetComposerHint();
+                } else {
+                    const detail = error && error.message ? error.message : 'Connection issue. Please try again.';
+                    addMessage('assistant', 'Error: ' + detail);
+                    setComposerHint(detail, true);
+                    console.error(error);
+                }
+            } finally {
+                activeController = null;
+                setComposerGeneratingState(false);
+                messageInput.focus();
             }
-
-            messageInput.disabled = false;
-            sendButton.disabled = false;
-            providerButton.disabled = false;
-            messageInput.focus();
         }
 
         function loadConversation(convId) {
@@ -1457,6 +2008,23 @@ foreach ($conversations as $conv) {
             autoResize();
             saveDraft();
         });
+        if (attachButton) {
+            attachButton.addEventListener('click', () => {
+                if (attachmentInput && !isGenerating) {
+                    attachmentInput.click();
+                }
+            });
+        }
+        if (attachmentInput) {
+            attachmentInput.addEventListener('change', async (event) => {
+                const files = event.target && event.target.files ? event.target.files : [];
+                await addAttachmentFiles(files);
+                attachmentInput.value = '';
+            });
+        }
+        if (voiceButton) {
+            voiceButton.addEventListener('click', toggleVoiceInput);
+        }
         providerButton.addEventListener('click', () => {
             toggleProviderMenu();
         });
@@ -1474,6 +2042,10 @@ foreach ($conversations as $conv) {
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
                 closeProviderMenu();
+                if (isListening && speechRecognizer) {
+                    speechRecognizer.stop();
+                }
+                resetComposerHint();
             }
         });
         messageInput.addEventListener('keydown', (e) => {
@@ -1484,11 +2056,16 @@ foreach ($conversations as $conv) {
         });
         window.addEventListener('beforeunload', saveDraft);
         restoreSidebarCollapsed();
+        setComposerGeneratingState(false);
+        renderAttachmentTray();
+        resetComposerHint();
+        initSpeechRecognition();
         restoreProvider();
         restoreDraft();
         restoreQuickPrompt();
         autoResize();
         ensureBottom();
+        updateJumpLatestVisibility();
         document.querySelectorAll('.msg.assistant .bubble').forEach((bubble) => {
             bubble.innerHTML = renderAssistantHtml(bubble.textContent || '');
         });

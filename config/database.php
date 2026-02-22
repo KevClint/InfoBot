@@ -16,9 +16,16 @@ define('GROQ_API_KEY', EnvLoader::get('GROQ_API_KEY', ''));
 define('GROQ_API_URL', EnvLoader::get('GROQ_API_URL', ''));
 define('GROQ_MODEL', EnvLoader::get('GROQ_MODEL', ''));
 
+// Hugging Face API constants from .env
+define('HF_API_KEY', EnvLoader::get('HF_API_KEY', ''));
+define('HF_API_URL', EnvLoader::get('HF_API_URL', 'https://router.huggingface.co/v1/chat/completions'));
+define('HF_MODEL', EnvLoader::get('HF_MODEL', 'meta-llama/Llama-3.1-8B-Instruct'));
+
 // Local Ollama constants from .env (used for local provider mode)
 define('LLM_API_URL', EnvLoader::get('LLM_API_URL', 'http://127.0.0.1:11434/api/chat'));
 define('LLM_MODEL', EnvLoader::get('LLM_MODEL', 'llama3.2:3b'));
+define('LLM_MODEL_LLAMA', EnvLoader::get('LLM_MODEL_LLAMA', 'llama3.2:3b'));
+define('LLM_MODEL_GEMMA', EnvLoader::get('LLM_MODEL_GEMMA', EnvLoader::get('LLM_MODEL', 'gemma3:4b')));
 
 // Determine BASE_PATH dynamically for Apache/XAMPP and root installs.
 if (!defined('BASE_PATH')) {

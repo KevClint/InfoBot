@@ -14,12 +14,16 @@ require_once __DIR__ . '/../config/database.php';
  * 
  * @param array $messages Array of messages in chat history
  * @param string $provider Provider name: 'api' (Groq) or 'local' (Ollama)
+ * @param string $local_model Optional local Ollama model override
  * @return array Response with 'success' and 'message' or 'error'
  */
-function getChatbotResponse($messages, $provider = 'api') {
+function getChatbotResponse($messages, $provider = 'api', $local_model = '') {
     $normalized_provider = strtolower(trim((string)$provider));
     if ($normalized_provider === 'local') {
-        return getLocalChatbotResponse($messages);
+        return getLocalChatbotResponse($messages, $local_model);
+    }
+    if ($normalized_provider === 'hf') {
+        return getHuggingFaceChatbotResponse($messages);
     }
 
     return getGroqChatbotResponse($messages);
@@ -53,6 +57,8 @@ function getGroqChatbotResponse($messages) {
         'Content-Type: application/json',
         'Authorization: Bearer ' . GROQ_API_KEY
     ));
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 8);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 120);
     
     // Execute request
     $response = curl_exec($ch);
@@ -95,14 +101,83 @@ function getGroqChatbotResponse($messages) {
 }
 
 /**
- * Send message to local Ollama API and get response.
+ * Send message to Hugging Face API and get response.
  *
  * @param array $messages
  * @return array
  */
-function getLocalChatbotResponse($messages) {
+function getHuggingFaceChatbotResponse($messages) {
+    if (trim((string)HF_API_KEY) === '') {
+        return array(
+            'success' => false,
+            'error' => 'Hugging Face API key is not configured'
+        );
+    }
+
     $data = array(
-        'model' => LLM_MODEL,
+        'model' => HF_MODEL,
+        'messages' => $messages,
+        'stream' => false
+    );
+
+    $ch = curl_init(HF_API_URL);
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . HF_API_KEY
+    ));
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 8);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 180);
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curl_error = curl_error($ch);
+    curl_close($ch);
+
+    if ($curl_error) {
+        return array(
+            'success' => false,
+            'error' => 'HF connection error: ' . $curl_error
+        );
+    }
+
+    if ($http_code < 200 || $http_code >= 300) {
+        return array(
+            'success' => false,
+            'error' => 'HF API error (HTTP ' . $http_code . '): ' . $response
+        );
+    }
+
+    $result = json_decode($response, true);
+    if (!isset($result['choices'][0]['message']['content'])) {
+        return array(
+            'success' => false,
+            'error' => 'Invalid HF API response'
+        );
+    }
+
+    return array(
+        'success' => true,
+        'message' => $result['choices'][0]['message']['content']
+    );
+}
+
+/**
+ * Send message to local Ollama API and get response.
+ *
+ * @param array $messages
+ * @param string $model_override
+ * @return array
+ */
+function getLocalChatbotResponse($messages, $model_override = '') {
+    $model_override = trim((string)$model_override);
+    $selected_model = $model_override !== '' ? $model_override : LLM_MODEL;
+
+    $data = array(
+        'model' => $selected_model,
         'messages' => $messages,
         'options' => array(
             'temperature' => 0.5,
@@ -120,6 +195,8 @@ function getLocalChatbotResponse($messages) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
         'Content-Type: application/json'
     ));
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 8);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 240);
 
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);

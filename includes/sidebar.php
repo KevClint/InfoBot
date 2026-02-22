@@ -60,7 +60,9 @@ function renderAppSidebar(array $options = []): void
 
     $localModel = defined('LLM_MODEL') ? (string)LLM_MODEL : 'Unknown';
     $apiModel = defined('GROQ_MODEL') ? (string)GROQ_MODEL : 'Unknown';
+    $hfModel = defined('HF_MODEL') ? (string)HF_MODEL : 'Unknown';
     $apiConfigured = defined('GROQ_API_KEY') && trim((string)GROQ_API_KEY) !== '' && defined('GROQ_API_URL') && trim((string)GROQ_API_URL) !== '';
+    $hfConfigured = defined('HF_API_KEY') && trim((string)HF_API_KEY) !== '' && defined('HF_API_URL') && trim((string)HF_API_URL) !== '';
     ?>
     <style>
         .side-search-wrap {
@@ -361,7 +363,11 @@ function renderAppSidebar(array $options = []): void
            data-base-path="<?php echo htmlspecialchars($basePath, ENT_QUOTES); ?>"
            data-local-model="<?php echo htmlspecialchars($localModel, ENT_QUOTES); ?>"
            data-api-model="<?php echo htmlspecialchars($apiModel, ENT_QUOTES); ?>"
-           data-api-configured="<?php echo $apiConfigured ? 'true' : 'false'; ?>">
+           data-hf-model="<?php echo htmlspecialchars($hfModel, ENT_QUOTES); ?>"
+           data-local-llama-model="<?php echo htmlspecialchars(defined('LLM_MODEL_LLAMA') ? (string)LLM_MODEL_LLAMA : 'llama3.2:3b', ENT_QUOTES); ?>"
+           data-local-gemma-model="<?php echo htmlspecialchars(defined('LLM_MODEL_GEMMA') ? (string)LLM_MODEL_GEMMA : 'gemma3:4b', ENT_QUOTES); ?>"
+           data-api-configured="<?php echo $apiConfigured ? 'true' : 'false'; ?>"
+           data-hf-configured="<?php echo $hfConfigured ? 'true' : 'false'; ?>">
         <div class="side-top">
             <div class="brand">
                 <div class="brand-actions">
@@ -664,7 +670,13 @@ function renderAppSidebar(array $options = []): void
 
             function getSelectedProvider() {
                 const saved = localStorage.getItem(providerKey);
-                return saved === 'local' ? 'local' : 'api';
+                if (saved === 'local_llama' || saved === 'local_gemma' || saved === 'api' || saved === 'hf') {
+                    return saved;
+                }
+                if (saved === 'local') {
+                    return 'local_gemma';
+                }
+                return 'api';
             }
 
             function updateStatusWidget() {
@@ -673,24 +685,33 @@ function renderAppSidebar(array $options = []): void
                 const selectedProvider = getSelectedProvider();
                 const basePath = sidebar.getAttribute('data-base-path') || '/';
                 const localModel = sidebar.getAttribute('data-local-model') || 'Unknown';
+                const localLlamaModel = sidebar.getAttribute('data-local-llama-model') || 'llama3.2:3b';
+                const localGemmaModel = sidebar.getAttribute('data-local-gemma-model') || 'gemma3:4b';
                 const apiModel = sidebar.getAttribute('data-api-model') || 'Unknown';
+                const hfModel = sidebar.getAttribute('data-hf-model') || 'Unknown';
                 const apiConfigured = sidebar.getAttribute('data-api-configured') === 'true';
+                const hfConfigured = sidebar.getAttribute('data-hf-configured') === 'true';
 
                 if (selectedProvider === 'api') {
                     setStatusWidget(apiConfigured ? 'online' : 'offline', apiConfigured ? 'Groq: Online' : 'Groq: Not Configured', apiModel);
                     return;
                 }
+                if (selectedProvider === 'hf') {
+                    setStatusWidget(hfConfigured ? 'online' : 'offline', hfConfigured ? 'HF: Online' : 'HF: Not Configured', hfModel);
+                    return;
+                }
 
-                setStatusWidget('pending', 'Ollama: Checking...', localModel);
+                const chosenLocalModel = selectedProvider === 'local_llama' ? localLlamaModel : (selectedProvider === 'local_gemma' ? localGemmaModel : localModel);
+
+                setStatusWidget('pending', 'Ollama: Checking...', chosenLocalModel);
                 fetch(basePath + 'api/local_status.php', { cache: 'no-store' })
                     .then((response) => response.json())
                     .then((data) => {
                         const online = !!(data && data.success && data.online);
-                        const model = data && data.model ? data.model : localModel;
-                        setStatusWidget(online ? 'online' : 'offline', online ? 'Ollama: Online' : 'Ollama: Offline', model);
+                        setStatusWidget(online ? 'online' : 'offline', online ? 'Ollama: Online' : 'Ollama: Offline', chosenLocalModel);
                     })
                     .catch(() => {
-                        setStatusWidget('offline', 'Ollama: Offline', localModel);
+                        setStatusWidget('offline', 'Ollama: Offline', chosenLocalModel);
                     });
             }
 
