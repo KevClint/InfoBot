@@ -1,7 +1,8 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/chatbot.php';
+require_once __DIR__ . '/../includes/sidebar.php';
 
 requireLogin();
 
@@ -116,7 +117,7 @@ $messages = getConversationMessages($current_conversation_id);
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            font-size: 16px;
+            font-size: calc(16px * var(--font-scale, 1));
             font-weight: 700;
             margin-bottom: 12px
         }
@@ -165,7 +166,8 @@ $messages = getConversationMessages($current_conversation_id);
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            font-weight: 600
+            font-weight: 600;
+            text-decoration: none
         }
 
         .ghost:hover {
@@ -175,7 +177,7 @@ $messages = getConversationMessages($current_conversation_id);
 
         .conv-head {
             padding: 2px 8px 10px;
-            font-size: 11px;
+            font-size: calc(11px * var(--font-scale, 1));
             letter-spacing: .08em;
             text-transform: uppercase;
             color: #93a3be
@@ -222,7 +224,9 @@ $messages = getConversationMessages($current_conversation_id);
             cursor: pointer;
             margin-bottom: 8px;
             position: relative;
-            transition: .16s
+            transition: .16s;
+            display: block;
+            text-decoration: none
         }
 
         .conv::before {
@@ -251,7 +255,7 @@ $messages = getConversationMessages($current_conversation_id);
         }
 
         .conv-title {
-            font-size: 14px;
+            font-size: calc(14px * var(--font-scale, 1));
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
@@ -259,7 +263,7 @@ $messages = getConversationMessages($current_conversation_id);
         }
 
         .conv-time {
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale, 1));
             color: #9ca3af;
             margin-top: 2px
         }
@@ -275,15 +279,23 @@ $messages = getConversationMessages($current_conversation_id);
             align-items: center;
             gap: 10px;
             padding: 10px 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             color: #cbd5e1;
             text-decoration: none;
-            font-size: 14px
+            border: 1px solid transparent;
+            font-size: calc(14px * var(--font-scale, 1))
         }
 
         .side-link:hover {
             background: rgba(30, 41, 59, .75);
-            color: #f8fafc
+            color: #f8fafc;
+            border-color: rgba(148, 163, 184, .34)
+        }
+
+        .side-link.active {
+            background: rgba(30, 41, 59, .95);
+            color: #f8fafc;
+            border-color: rgba(99, 102, 241, .55)
         }
 
         .main {
@@ -327,7 +339,7 @@ $messages = getConversationMessages($current_conversation_id);
         }
 
         .title {
-            font-size: 15px;
+            font-size: calc(15px * var(--font-scale, 1));
             font-weight: 600
         }
 
@@ -336,7 +348,7 @@ $messages = getConversationMessages($current_conversation_id);
             border-radius: 999px;
             background: #fff;
             padding: 5px 10px;
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale, 1));
             color: var(--sub)
         }
 
@@ -358,7 +370,7 @@ $messages = getConversationMessages($current_conversation_id);
 
         .empty h1 {
             font-family: 'Sora', sans-serif;
-            font-size: 34px;
+            font-size: calc(34px * var(--font-scale, 1));
             font-weight: 600;
             letter-spacing: -.02em;
             margin-bottom: 10px
@@ -392,13 +404,13 @@ $messages = getConversationMessages($current_conversation_id);
         }
 
         .ctitle {
-            font-size: 14px;
+            font-size: calc(14px * var(--font-scale, 1));
             font-weight: 600;
             margin-bottom: 4px
         }
 
         .csub {
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale, 1));
             color: var(--sub)
         }
 
@@ -439,7 +451,7 @@ $messages = getConversationMessages($current_conversation_id);
         .bubble {
             border-radius: 16px;
             padding: 11px 14px;
-            font-size: 14px;
+            font-size: calc(14px * var(--font-scale, 1));
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: anywhere
@@ -462,7 +474,7 @@ $messages = getConversationMessages($current_conversation_id);
             align-items: center;
             gap: 8px;
             margin-top: 5px;
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale, 1));
             color: #94a3b8
         }
 
@@ -555,7 +567,7 @@ $messages = getConversationMessages($current_conversation_id);
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: calc(13px * var(--font-scale, 1));
             font-weight: 600
         }
 
@@ -639,7 +651,7 @@ $messages = getConversationMessages($current_conversation_id);
             min-height: 24px;
             max-height: 180px;
             font-family: 'Inter', sans-serif;
-            font-size: 15px;
+            font-size: calc(15px * var(--font-scale, 1));
             color: var(--text);
             line-height: 1.5;
             padding: 6px 4px
@@ -674,7 +686,7 @@ $messages = getConversationMessages($current_conversation_id);
 
         .hint {
             margin-top: 8px;
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale, 1));
             color: #94a3b8;
             text-align: center
         }
@@ -846,50 +858,17 @@ $messages = getConversationMessages($current_conversation_id);
 <body>
     <div class="overlay" id="overlay" aria-hidden="true"></div>
     <div class="app">
-        <aside class="sidebar" id="sidebar">
-            <div class="side-top">
-                <div class="brand">
-                    <div class="brand-left"><span class="material-symbols-rounded">smart_toy</span><span>InfoBot</span></div>
-                    <a class="brand-github" href="https://github.com/KevClint" target="_blank" rel="noopener noreferrer" aria-label="Open GitHub profile">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58l-.02-2.03c-3.34.73-4.04-1.41-4.04-1.41-.55-1.36-1.33-1.72-1.33-1.72-1.09-.73.09-.72.09-.72 1.2.08 1.83 1.22 1.83 1.22 1.08 1.82 2.83 1.29 3.52.98.11-.77.42-1.29.76-1.59-2.67-.3-5.47-1.31-5.47-5.86 0-1.3.47-2.36 1.23-3.19-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.22a11.55 11.55 0 0 1 6 0c2.3-1.54 3.3-1.22 3.3-1.22.65 1.65.24 2.87.12 3.17.77.83 1.23 1.89 1.23 3.19 0 4.56-2.8 5.55-5.48 5.85.43.37.81 1.09.81 2.21l-.01 3.28c0 .32.22.7.82.58A12 12 0 0 0 12 .5Z" />
-                        </svg>
-                    </a>
-                </div>
-                <button class="ghost" type="button" onclick="newConversation()"><span class="material-symbols-rounded">add</span>New Chat</button>
-            </div>
-            <div class="conv-list">
-                <div class="conv-head">Recent Chats</div>
-                <?php if (empty($conversations)): ?>
-                    <div class="conv active" style="cursor:default;">
-                        <div class="conv-title">Project kickoff questions</div>
-                        <div class="conv-time">Demo conversation</div>
-                    </div>
-                    <div class="conv" style="cursor:default;">
-                        <div class="conv-title">Marketing copy ideas</div>
-                        <div class="conv-time">Demo conversation</div>
-                    </div>
-                    <div class="conv" style="cursor:default;">
-                        <div class="conv-title">Build a 7-day study plan</div>
-                        <div class="conv-time">Demo conversation</div>
-                    </div>
-                <?php else: ?>
-                    <?php foreach ($conversations as $conv): ?>
-                        <button class="conv <?php echo ((int)$conv['id'] === (int)$current_conversation_id) ? 'active' : ''; ?>" onclick="loadConversation(<?php echo (int)$conv['id']; ?>)">
-                            <div class="conv-title"><?php echo htmlspecialchars($conv['title']); ?></div>
-                            <div class="conv-time"><?php echo date('M j, g:i A', strtotime($conv['updated_at'])); ?></div>
-                        </button>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-            <div class="side-foot">
-                <?php if ($user_role === 'admin'): ?>
-                    <a class="side-link" href="<?php echo BASE_PATH; ?>pages/admin/index.php"><span class="material-symbols-rounded">admin_panel_settings</span><span>Admin</span></a>
-                <?php endif; ?>
-                <a class="side-link" href="<?php echo BASE_PATH; ?>pages/settings.php"><span class="material-symbols-rounded">settings</span><span>Settings</span></a>
-                <a class="side-link" href="<?php echo BASE_PATH; ?>pages/logout.php"><span class="material-symbols-rounded">logout</span><span>Logout</span></a>
-            </div>
-        </aside>
+        <?php
+        renderAppSidebar([
+            'base_path' => BASE_PATH,
+            'conversations' => $conversations,
+            'current_conversation_id' => $current_conversation_id,
+            'current_page' => 'chat',
+            'user_role' => $user_role,
+            'show_recent' => true,
+            'show_new_chat' => true
+        ]);
+        ?>
 
         <main class="main">
             <header class="top">
@@ -931,7 +910,7 @@ $messages = getConversationMessages($current_conversation_id);
                                     <div class="bubble"><?php echo nl2br(htmlspecialchars($msg['content'])); ?></div>
                                     <div class="meta">
                                         <time datetime="<?php echo htmlspecialchars($msg['created_at']); ?>"><?php echo date('g:i A', strtotime($msg['created_at'])); ?></time>
-                                        <?php if ($msg['role'] !== 'user'): ?><button class="icon" type="button" onclick="copyMessage(this)" aria-label="Copy response"><span class="material-symbols-rounded" style="font-size:18px;">content_copy</span></button><?php endif; ?>
+                                        <?php if ($msg['role'] !== 'user'): ?><button class="icon" type="button" onclick="copyMessage(this)" aria-label="Copy response"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">content_copy</span></button><?php endif; ?>
                                     </div>
                                 </div>
                             </article>
@@ -946,18 +925,18 @@ $messages = getConversationMessages($current_conversation_id);
                     <form class="composer" onsubmit="sendMessage(event)">
                         <div class="provider-switch">
                             <button class="provider-btn" id="providerButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="providerMenu">
-                                <span class="material-symbols-rounded" id="providerIcon" style="font-size:18px;">cloud</span>
+                                <span class="material-symbols-rounded" id="providerIcon" style="font-size: calc(18px * var(--font-scale, 1));">cloud</span>
                                 <span class="provider-label" id="providerLabel">API</span>
-                                <span class="material-symbols-rounded" style="font-size:18px;">expand_more</span>
+                                <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">expand_more</span>
                             </button>
                             <div class="provider-menu" id="providerMenu" role="menu">
                                 <button class="provider-option" type="button" data-provider="api" role="menuitem">
-                                    <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size:18px;">cloud</span><span>API (Groq)</span></span>
-                                    <span class="material-symbols-rounded" style="font-size:18px;">check</span>
+                                    <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">cloud</span><span>API (Groq)</span></span>
+                                    <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">check</span>
                                 </button>
                                 <button class="provider-option" type="button" data-provider="local" role="menuitem">
-                                    <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size:18px;">memory</span><span>Local (Ollama)</span></span>
-                                    <span class="material-symbols-rounded" style="font-size:18px;">check</span>
+                                    <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">memory</span><span>Local (Ollama)</span></span>
+                                    <span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">check</span>
                                 </button>
                             </div>
                         </div>
@@ -1163,7 +1142,7 @@ $messages = getConversationMessages($current_conversation_id);
             const nowIso = new Date().toISOString();
             const safe = escapeHtml(content).replace(/\n/g, '<br>');
             if (role === 'assistant') {
-                el.innerHTML = `<div class="avatar" aria-hidden="true"><span class="material-symbols-rounded">smart_toy</span></div><div class="wrap"><div class="bubble">${renderAssistantHtml(content)}</div><div class="meta"><time datetime="${nowIso}">${getTime()}</time><button class="icon" type="button" onclick="copyMessage(this)" aria-label="Copy response"><span class="material-symbols-rounded" style="font-size:18px;">content_copy</span></button></div></div>`;
+                el.innerHTML = `<div class="avatar" aria-hidden="true"><span class="material-symbols-rounded">smart_toy</span></div><div class="wrap"><div class="bubble">${renderAssistantHtml(content)}</div><div class="meta"><time datetime="${nowIso}">${getTime()}</time><button class="icon" type="button" onclick="copyMessage(this)" aria-label="Copy response"><span class="material-symbols-rounded" style="font-size: calc(18px * var(--font-scale, 1));">content_copy</span></button></div></div>`;
             } else {
                 el.innerHTML = `<div class="wrap"><div class="bubble">${safe}</div><div class="meta"><time datetime="${nowIso}">${getTime()}</time></div></div>`;
             }

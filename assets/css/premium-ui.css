@@ -76,7 +76,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
 }
 
 .ui-nav-link:hover {
@@ -98,7 +98,7 @@ body {
 }
 
 .ui-title {
-  font-size: 28px;
+  font-size: calc(28px * var(--font-scale, 1));
   line-height: 1.2;
   margin: 0 0 6px;
   letter-spacing: -0.02em;
@@ -152,7 +152,7 @@ body {
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   text-decoration: none;
   font-family: inherit;
 }
@@ -181,14 +181,14 @@ body {
 
 .ui-btn.sm {
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
 }
 
 .ui-alert {
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 14px;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
 }
 
 .ui-alert.success {
@@ -221,7 +221,7 @@ body {
   text-align: left;
   border-bottom: 1px solid var(--line);
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
 }
 
 .ui-table th {
@@ -236,14 +236,14 @@ body {
   display: inline-flex;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   border: 1px solid var(--line);
   background: #eef2ff;
   color: #4338ca;
 }
 
 .ui-form-group { margin-bottom: 14px; }
-.ui-form-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+.ui-form-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: calc(14px * var(--font-scale, 1)); }
 .ui-input,
 .ui-select,
 .ui-textarea {
@@ -251,7 +251,7 @@ body {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   font-family: inherit;
   background: #fff;
   color: var(--text);
@@ -329,7 +329,7 @@ body {
   border-radius: 10px;
   padding: 8px 10px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
 }
 
 .ui-option-btn.active {
@@ -430,8 +430,8 @@ body.dark-mode .ui-table th {
   padding: 14px;
 }
 
-.ui-stat-title { color: var(--text-muted); font-size: 13px; }
-.ui-stat-value { font-size: 26px; margin-top: 6px; font-weight: 700; letter-spacing: -0.02em; }
+.ui-stat-title { color: var(--text-muted); font-size: calc(13px * var(--font-scale, 1)); }
+.ui-stat-value { font-size: calc(26px * var(--font-scale, 1)); margin-top: 6px; font-weight: 700; letter-spacing: -0.02em; }
 
 @media (max-width: 960px) {
   .ui-grid.cols-2 { grid-template-columns: 1fr; }

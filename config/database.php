@@ -20,16 +20,28 @@ define('GROQ_MODEL', EnvLoader::get('GROQ_MODEL', ''));
 define('LLM_API_URL', EnvLoader::get('LLM_API_URL', 'http://127.0.0.1:11434/api/chat'));
 define('LLM_MODEL', EnvLoader::get('LLM_MODEL', 'llama3.2:3b'));
 
-// Determine BASE_PATH dynamically for Apache and PHP built-in server compatibility
+// Determine BASE_PATH dynamically for Apache/XAMPP and root installs.
 if (!defined('BASE_PATH')) {
     $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
-    // Check if /infobot/ is in the path (Apache/XAMPP)
-    if (strpos($script_name, '/infobot/') !== false) {
-        define('BASE_PATH', '/infobot/');
-    } else {
-        // PHP built-in server or running from root
-        define('BASE_PATH', '/');
+    $base_path = '/';
+
+    // Example matches:
+    // /InfoBot/pages/chat.php  -> /InfoBot/
+    // /pages/chat.php          -> /
+    if (preg_match('#^(.*/)(?:pages|api|assets|includes|config|database)/#i', $script_name, $m)) {
+        $base_path = $m[1];
+    } elseif (preg_match('#^(.*/)[^/]+$#', $script_name, $m)) {
+        $base_path = $m[1];
     }
+
+    if ($base_path === '') {
+        $base_path = '/';
+    }
+    if (substr($base_path, -1) !== '/') {
+        $base_path .= '/';
+    }
+
+    define('BASE_PATH', $base_path);
 }
 
 /**

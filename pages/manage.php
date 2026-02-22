@@ -241,8 +241,7 @@ if (isset($_GET['success'])) {
             <?php endif; ?>
         </nav>
         <div class="side-foot">
-            <a class="side-link active" href="<?php echo BASE_PATH; ?>pages/manage.php"><span class="material-symbols-rounded">folder</span><span>Manage</span></a>
-            <a class="side-link" href="<?php echo BASE_PATH; ?>pages/settings.php"><span class="material-symbols-rounded">settings</span><span>Settings</span></a>
+            <a class="side-link active" href="<?php echo BASE_PATH; ?>pages/settings.php"><span class="material-symbols-rounded">settings</span><span>Settings</span></a>
             <a class="side-link" href="<?php echo BASE_PATH; ?>pages/logout.php"><span class="material-symbols-rounded">logout</span><span>Logout</span></a>
         </div>
     </aside>

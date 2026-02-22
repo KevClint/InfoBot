@@ -18,10 +18,16 @@
       medium: '15px',
       large: '17px'
     };
+    var scaleMap = {
+      small: '0.933333',
+      medium: '1',
+      large: '1.133333'
+    };
 
     var accent = colorMap[themeColor] || '#4f46e5';
 
     root.style.setProperty('--font-size-base', sizeMap[fontSize] || '15px');
+    root.style.setProperty('--font-scale', scaleMap[fontSize] || '1');
     root.style.setProperty('--accent', accent);
     root.style.setProperty('--accent-hover', accent);
 
