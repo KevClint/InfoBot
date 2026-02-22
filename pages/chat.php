@@ -539,6 +539,97 @@ $messages = getConversationMessages($current_conversation_id);
             align-items: flex-end
         }
 
+        .provider-switch {
+            position: relative;
+            flex: 0 0 auto
+        }
+
+        .provider-btn {
+            height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--sub);
+            padding: 0 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600
+        }
+
+        .provider-btn:hover {
+            border-color: #cbd5e1
+        }
+
+        .provider-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed
+        }
+
+        .provider-label {
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .provider-menu {
+            position: absolute;
+            bottom: 46px;
+            left: 0;
+            width: 210px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: var(--shadow);
+            padding: 6px;
+            display: none;
+            z-index: 25
+        }
+
+        .provider-menu.open {
+            display: block
+        }
+
+        .provider-option {
+            width: 100%;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px
+        }
+
+        .provider-option:hover {
+            background: rgba(79, 70, 229, .07)
+        }
+
+        .provider-option.active {
+            background: rgba(79, 70, 229, .1);
+            border-color: rgba(79, 70, 229, .24)
+        }
+
+        .provider-option > .material-symbols-rounded:last-child {
+            opacity: 0
+        }
+
+        .provider-option.active > .material-symbols-rounded:last-child {
+            opacity: 1
+        }
+
+        .provider-option-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px
+        }
+
         .composer textarea {
             flex: 1;
             border: 0;
@@ -710,6 +801,22 @@ $messages = getConversationMessages($current_conversation_id);
             border-color: var(--line)
         }
 
+        html.dark-mode .provider-btn,
+        html.dark-mode .provider-menu {
+            background: var(--panel);
+            border-color: var(--line);
+            color: var(--text)
+        }
+
+        html.dark-mode .provider-option:hover {
+            background: rgba(99, 102, 241, .16)
+        }
+
+        html.dark-mode .provider-option.active {
+            background: rgba(99, 102, 241, .22);
+            border-color: rgba(129, 140, 248, .38)
+        }
+
         html.dark-mode .composer-shell {
             background: linear-gradient(to top, rgba(11, 18, 32, 1) 64%, rgba(11, 18, 32, .78) 86%, rgba(11, 18, 32, 0))
         }
@@ -790,7 +897,7 @@ $messages = getConversationMessages($current_conversation_id);
                     <button class="menu" id="menuBtn" type="button" aria-label="Open conversations"><span class="material-symbols-rounded">menu</span></button>
                     <div class="title">Welcome, <?php echo htmlspecialchars($username); ?></div>
                 </div>
-                <div class="chip">Model: GROQ API - Llama3.18B</div>
+                <div class="chip" id="modelBadge">Model: API (Groq)</div>
             </header>
 
             <section class="scroll" id="chatScroll">
@@ -837,6 +944,23 @@ $messages = getConversationMessages($current_conversation_id);
             <div class="composer-shell">
                 <div class="composer-stage">
                     <form class="composer" onsubmit="sendMessage(event)">
+                        <div class="provider-switch">
+                            <button class="provider-btn" id="providerButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="providerMenu">
+                                <span class="material-symbols-rounded" id="providerIcon" style="font-size:18px;">cloud</span>
+                                <span class="provider-label" id="providerLabel">API</span>
+                                <span class="material-symbols-rounded" style="font-size:18px;">expand_more</span>
+                            </button>
+                            <div class="provider-menu" id="providerMenu" role="menu">
+                                <button class="provider-option" type="button" data-provider="api" role="menuitem">
+                                    <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size:18px;">cloud</span><span>API (Groq)</span></span>
+                                    <span class="material-symbols-rounded" style="font-size:18px;">check</span>
+                                </button>
+                                <button class="provider-option" type="button" data-provider="local" role="menuitem">
+                                    <span class="provider-option-main"><span class="material-symbols-rounded" style="font-size:18px;">memory</span><span>Local (Ollama)</span></span>
+                                    <span class="material-symbols-rounded" style="font-size:18px;">check</span>
+                                </button>
+                            </div>
+                        </div>
                         <textarea id="messageInput" rows="1" placeholder="Message InfoBot..." aria-label="Type a message"></textarea>
                         <button class="send" id="sendButton" type="submit" aria-label="Send"><span class="material-symbols-rounded">north_east</span></button>
                     </form>
@@ -857,8 +981,28 @@ $messages = getConversationMessages($current_conversation_id);
         const sendButton = document.getElementById('sendButton');
         const emptyState = document.getElementById('emptyState');
         const messageList = document.getElementById('messageList');
-const messageEnd = document.getElementById('messageEnd');
+        const messageEnd = document.getElementById('messageEnd');
+        const modelBadge = document.getElementById('modelBadge');
+        const providerButton = document.getElementById('providerButton');
+        const providerMenu = document.getElementById('providerMenu');
+        const providerLabel = document.getElementById('providerLabel');
+        const providerIcon = document.getElementById('providerIcon');
+        const providerOptions = document.querySelectorAll('.provider-option');
         const DRAFT_KEY = `infobot_draft_${conversationId}`;
+        const PROVIDER_KEY = 'infobot_provider';
+        const PROVIDER_META = {
+            api: {
+                short: 'API',
+                label: 'API (<?php echo htmlspecialchars(GROQ_MODEL); ?>)',
+                icon: 'cloud'
+            },
+            local: {
+                short: 'Local',
+                label: 'Local (<?php echo htmlspecialchars(LLM_MODEL); ?>)',
+                icon: 'memory'
+            }
+        };
+        let selectedProvider = 'api';
 
         function openSidebar() {
             sidebar.classList.add('open');
@@ -904,6 +1048,39 @@ const messageEnd = document.getElementById('messageEnd');
 
         function removeEmptyState() {
             if (emptyState && emptyState.parentNode) emptyState.remove();
+        }
+
+        function setProvider(provider) {
+            const nextProvider = PROVIDER_META[provider] ? provider : 'api';
+            selectedProvider = nextProvider;
+
+            const meta = PROVIDER_META[nextProvider];
+            providerLabel.textContent = meta.short;
+            providerIcon.textContent = meta.icon;
+            if (modelBadge) {
+                modelBadge.textContent = 'Model: ' + meta.label;
+            }
+
+            providerOptions.forEach((option) => {
+                option.classList.toggle('active', option.dataset.provider === nextProvider);
+            });
+
+            localStorage.setItem(PROVIDER_KEY, nextProvider);
+        }
+
+        function toggleProviderMenu(forceOpen) {
+            const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !providerMenu.classList.contains('open');
+            providerMenu.classList.toggle('open', shouldOpen);
+            providerButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        }
+
+        function closeProviderMenu() {
+            toggleProviderMenu(false);
+        }
+
+        function restoreProvider() {
+            const saved = localStorage.getItem(PROVIDER_KEY);
+            setProvider(saved && PROVIDER_META[saved] ? saved : 'api');
         }
 
         function renderAssistantHtml(text) {
@@ -1060,6 +1237,7 @@ const messageEnd = document.getElementById('messageEnd');
 
             sendButton.disabled = true;
             messageInput.disabled = true;
+            providerButton.disabled = true;
             addMessage('user', content);
             messageInput.value = '';
             autoResize();
@@ -1075,7 +1253,8 @@ const messageEnd = document.getElementById('messageEnd');
                     },
                     body: JSON.stringify({
                         conversation_id: conversationId,
-                        message: content
+                        message: content,
+                        provider: selectedProvider
                     })
                 });
                 if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -1094,6 +1273,7 @@ const messageEnd = document.getElementById('messageEnd');
 
             messageInput.disabled = false;
             sendButton.disabled = false;
+            providerButton.disabled = false;
             messageInput.focus();
         }
 
@@ -1109,6 +1289,25 @@ const messageEnd = document.getElementById('messageEnd');
             autoResize();
             saveDraft();
         });
+        providerButton.addEventListener('click', () => {
+            toggleProviderMenu();
+        });
+        providerOptions.forEach((option) => {
+            option.addEventListener('click', () => {
+                setProvider(option.dataset.provider || 'api');
+                closeProviderMenu();
+            });
+        });
+        document.addEventListener('click', (event) => {
+            if (!providerMenu.contains(event.target) && !providerButton.contains(event.target)) {
+                closeProviderMenu();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeProviderMenu();
+            }
+        });
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1116,6 +1315,7 @@ const messageEnd = document.getElementById('messageEnd');
             }
         });
         window.addEventListener('beforeunload', saveDraft);
+        restoreProvider();
         restoreDraft();
         autoResize();
         ensureBottom();

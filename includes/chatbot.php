@@ -2,19 +2,36 @@
 /**
  * CHATBOT API HELPER FUNCTIONS
  * 
- * This file contains functions to interact with the Groq API
- * and handle chatbot responses.
+ * This file contains provider helpers to interact with:
+ * - Groq API (remote)
+ * - Ollama API (local)
  */
 
 require_once __DIR__ . '/../config/database.php';
 
 /**
- * Send message to Groq API and get response
+ * Send message to selected provider and get response.
  * 
  * @param array $messages Array of messages in chat history
+ * @param string $provider Provider name: 'api' (Groq) or 'local' (Ollama)
  * @return array Response with 'success' and 'message' or 'error'
  */
-function getChatbotResponse($messages) {
+function getChatbotResponse($messages, $provider = 'api') {
+    $normalized_provider = strtolower(trim((string)$provider));
+    if ($normalized_provider === 'local') {
+        return getLocalChatbotResponse($messages);
+    }
+
+    return getGroqChatbotResponse($messages);
+}
+
+/**
+ * Send message to Groq API and get response.
+ *
+ * @param array $messages
+ * @return array
+ */
+function getGroqChatbotResponse($messages) {
     // Prepare the request data
     $data = array(
         'model' => GROQ_MODEL,
@@ -74,6 +91,66 @@ function getChatbotResponse($messages) {
     return array(
         'success' => true,
         'message' => $result['choices'][0]['message']['content']
+    );
+}
+
+/**
+ * Send message to local Ollama API and get response.
+ *
+ * @param array $messages
+ * @return array
+ */
+function getLocalChatbotResponse($messages) {
+    $data = array(
+        'model' => LLM_MODEL,
+        'messages' => $messages,
+        'options' => array(
+            'temperature' => 0.5,
+            'num_predict' => 220
+        ),
+        'keep_alive' => '10m',
+        'stream' => false
+    );
+
+    $ch = curl_init(LLM_API_URL);
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Content-Type: application/json'
+    ));
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curl_error = curl_error($ch);
+    curl_close($ch);
+
+    if ($curl_error) {
+        return array(
+            'success' => false,
+            'error' => 'Connection error: ' . $curl_error
+        );
+    }
+
+    if ($http_code !== 200) {
+        return array(
+            'success' => false,
+            'error' => 'Local API error (HTTP ' . $http_code . '): ' . $response
+        );
+    }
+
+    $result = json_decode($response, true);
+    if (!isset($result['message']['content'])) {
+        return array(
+            'success' => false,
+            'error' => 'Invalid local API response'
+        );
+    }
+
+    return array(
+        'success' => true,
+        'message' => $result['message']['content']
     );
 }
 

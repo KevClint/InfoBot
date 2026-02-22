@@ -25,7 +25,12 @@ if (!isLoggedIn()) {
 $input = json_decode(file_get_contents('php://input'), true);
 $conversation_id = intval($input['conversation_id'] ?? 0);
 $user_message = trim($input['message'] ?? '');
+$provider = strtolower(trim((string)($input['provider'] ?? 'api')));
 $user_id = getCurrentUserId();
+
+if ($provider !== 'api' && $provider !== 'local') {
+    $provider = 'api';
+}
 
 // Validate input
 if (!$conversation_id || !$user_message) {
@@ -92,8 +97,8 @@ foreach ($recent_messages as $msg) {
     ];
 }
 
-// Get response from Groq API
-$api_response = getChatbotResponse($chat_history);
+// Get response from selected provider (api=Groq, local=Ollama)
+$api_response = getChatbotResponse($chat_history, $provider);
 
 if ($api_response['success']) {
     $bot_message = $api_response['message'];
@@ -102,7 +107,8 @@ if ($api_response['success']) {
     if (saveMessage($conversation_id, $user_id, 'assistant', $bot_message)) {
         echo json_encode([
             'success' => true,
-            'message' => $bot_message
+            'message' => $bot_message,
+            'provider' => $provider
         ]);
     } else {
         echo json_encode([
