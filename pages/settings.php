@@ -74,11 +74,36 @@ closeDatabaseConnection($conn);
             margin-bottom: 12px;
         }
 
-        .brand-left {
-            display: flex;
+        .brand-actions {
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
-            color: #f8fafc;
+            gap: 8px;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .brand-collapse {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(148, 163, 184, .36);
+            border-radius: 999px;
+            background: rgba(15, 23, 42, .45);
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: .16s;
+        }
+
+        .brand-collapse:hover {
+            background: rgba(30, 41, 59, .8);
+            border-color: rgba(148, 163, 184, .56);
+            transform: translateY(-1px);
+        }
+
+        .brand-collapse .material-symbols-rounded {
+            font-size: calc(18px * var(--font-scale, 1));
         }
 
         .brand-github {
@@ -200,11 +225,11 @@ closeDatabaseConnection($conn);
 
         .conv.active {
             background: rgba(30, 41, 59, .95);
-            border-color: rgba(99, 102, 241, .55);
+            border-color: color-mix(in srgb, var(--accent) 55%, transparent);
         }
 
         .conv.active::before {
-            background: #4f46e5;
+            background: var(--accent);
         }
 
         .conv-title {
@@ -242,7 +267,7 @@ closeDatabaseConnection($conn);
         .side-link.active {
             background: rgba(30, 41, 59, .95);
             color: #f8fafc;
-            border-color: rgba(99, 102, 241, .55);
+            border-color: color-mix(in srgb, var(--accent) 55%, transparent);
         }
 
         .side-foot {
@@ -294,6 +319,52 @@ closeDatabaseConnection($conn);
         .page-main {
             margin-left: 288px;
             min-height: 100vh;
+            min-width: 0;
+            overflow-x: clip;
+        }
+
+        body.sidebar-collapsed .sidebar {
+            width: 76px;
+            min-width: 76px;
+        }
+
+        body.sidebar-collapsed .page-main {
+            margin-left: 76px;
+        }
+
+        body.sidebar-collapsed .side-top {
+            padding: 12px 8px;
+        }
+
+        body.sidebar-collapsed .brand {
+            justify-content: center;
+            margin-bottom: 0;
+        }
+
+        body.sidebar-collapsed .ghost,
+        body.sidebar-collapsed .conv-list {
+            display: none;
+        }
+
+        body.sidebar-collapsed .brand-actions .brand-github {
+            display: none;
+        }
+
+        body.sidebar-collapsed .brand-actions {
+            width: auto;
+        }
+
+        body.sidebar-collapsed .side-foot {
+            padding: 10px 8px;
+        }
+
+        body.sidebar-collapsed .side-link {
+            justify-content: center;
+            padding: 10px;
+        }
+
+        body.sidebar-collapsed .side-link span:last-child {
+            display: none;
         }
 
         .page-main .ui-container {
@@ -301,9 +372,188 @@ closeDatabaseConnection($conn);
             padding-top: 24px;
         }
 
+        .settings-layout {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .setting-block {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        .setting-row-left {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .setting-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            color: var(--text-muted);
+            font-size: calc(12px * var(--font-scale, 1));
+            margin-bottom: 8px;
+            background: var(--surface-muted);
+        }
+
+        .setting-title {
+            font-size: calc(15px * var(--font-scale, 1));
+            font-weight: 700;
+            line-height: 1.25;
+            margin-bottom: 4px;
+        }
+
+        .setting-desc {
+            color: var(--text-muted);
+            font-size: calc(13px * var(--font-scale, 1));
+            line-height: 1.45;
+        }
+
+        .text-size-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            width: 100%;
+        }
+
+        .text-size-grid .ui-option-btn {
+            width: 100%;
+            text-align: center;
+            padding: 9px 8px;
+            font-weight: 600;
+        }
+
+        .accent-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
+            width: 100%;
+        }
+
+        .accent-swatch {
+            width: 100%;
+            min-width: 0;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fff;
+            padding: 8px 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: calc(13px * var(--font-scale, 1));
+            cursor: pointer;
+            color: var(--text);
+            transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+
+        .accent-swatch:hover {
+            border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+            transform: translateY(-1px);
+        }
+
+        .accent-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            flex: 0 0 auto;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, .8), 0 0 0 3px rgba(15, 23, 42, .08);
+        }
+
+        .accent-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .accent-swatch.active {
+            border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+            background: var(--accent-soft, #eef2ff);
+            color: var(--accent);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+        }
+
+        .danger-zone {
+            border-color: color-mix(in srgb, var(--danger) 26%, var(--line));
+            background: linear-gradient(180deg, color-mix(in srgb, var(--danger) 7%, var(--surface)) 0%, var(--surface) 100%);
+        }
+
+        .danger-note {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid color-mix(in srgb, var(--danger) 28%, var(--line));
+            color: color-mix(in srgb, var(--danger) 78%, var(--text));
+            background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: calc(12px * var(--font-scale, 1));
+            margin-bottom: 8px;
+        }
+
+        .conversation-card {
+            margin-top: 14px;
+        }
+
+        .conversation-meta {
+            color: var(--text-muted);
+            font-size: calc(13px * var(--font-scale, 1));
+            margin-bottom: 10px;
+        }
+
+        .ui-table {
+            min-width: 0;
+            table-layout: fixed;
+        }
+
+        .ui-table th:first-child,
+        .ui-table td:first-child {
+            width: 48%;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .ui-table th:nth-child(2),
+        .ui-table td:nth-child(2) {
+            width: 32%;
+        }
+
+        .ui-table th:last-child,
+        .ui-table td:last-child {
+            width: 20%;
+            text-align: right;
+        }
+
+        .ui-table td .ui-btn {
+            white-space: nowrap;
+        }
+
+        .table-mobile {
+            display: none;
+        }
+
         @media (max-width: 960px) {
             .mobile-top {
                 display: flex;
+            }
+
+            .brand-collapse {
+                display: none;
             }
 
             .sidebar {
@@ -319,6 +569,96 @@ closeDatabaseConnection($conn);
             .page-main {
                 margin-left: 0;
             }
+
+            body.sidebar-collapsed .sidebar {
+                width: 288px;
+                min-width: 288px;
+            }
+
+            body.sidebar-collapsed .page-main {
+                margin-left: 0;
+            }
+
+            .settings-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .setting-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .setting-row .ui-switch {
+                margin-top: 2px;
+            }
+
+            .accent-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .ui-table th:last-child,
+            .ui-table td:last-child {
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .ui-table-wrap {
+                display: none;
+            }
+
+            .table-mobile {
+                display: grid;
+                gap: 10px;
+            }
+
+            .table-mobile-item {
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                background: #fff;
+                padding: 12px;
+                display: grid;
+                gap: 8px;
+            }
+
+            .table-mobile-title {
+                font-size: calc(14px * var(--font-scale, 1));
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+
+            .table-mobile-meta {
+                color: var(--text-muted);
+                font-size: calc(13px * var(--font-scale, 1));
+            }
+
+            .table-mobile-actions {
+                display: flex;
+                justify-content: flex-start;
+            }
+
+            .text-size-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .accent-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        html.dark-mode .accent-swatch,
+        body.dark-mode .accent-swatch,
+        html.dark-mode .table-mobile-item,
+        body.dark-mode .table-mobile-item {
+            background: var(--surface);
+            border-color: var(--line);
+            color: var(--text);
+        }
+
+        html.dark-mode .danger-zone,
+        body.dark-mode .danger-zone {
+            background: linear-gradient(180deg, color-mix(in srgb, var(--danger) 12%, var(--surface)) 0%, var(--surface) 100%);
         }
     </style>
 </head>
@@ -347,52 +687,74 @@ closeDatabaseConnection($conn);
             <p class="ui-subtitle">Customize appearance and manage conversation data.</p>
         </section>
 
-        <section class="ui-grid cols-2">
-            <article class="ui-card">
-                <div class="ui-card-header"><h3>Appearance</h3></div>
-                <div class="ui-actions" style="justify-content:space-between;">
-                    <div>
-                        <div style="font-weight:600; font-size:14px;">Dark Mode</div>
-                        <div class="ui-muted" style="font-size:13px;">Toggle low-light reading mode.</div>
+        <section class="settings-layout">
+            <article class="ui-card setting-block">
+                <div class="setting-kicker"><span class="material-symbols-rounded" style="font-size:16px;">palette</span>Appearance</div>
+                <div class="setting-row">
+                    <div class="setting-row-left">
+                        <div class="setting-title">Dark mode</div>
+                        <div class="setting-desc">Reduce eye strain in low-light environments across chat and settings.</div>
                     </div>
-                    <label class="ui-switch">
+                    <label class="ui-switch" aria-label="Toggle dark mode">
                         <input type="checkbox" id="darkMode" <?php echo $prefs['dark_mode'] ? 'checked' : ''; ?>>
                         <span class="ui-switch-slider"></span>
                     </label>
                 </div>
             </article>
 
-            <article class="ui-card">
-                <div class="ui-card-header"><h3>Text Size</h3></div>
-                <div class="ui-option-row">
-                    <button class="ui-option-btn <?php echo $prefs['font_size'] === 'small' ? 'active' : ''; ?>" onclick="changeFontSize('small', this)">Small</button>
-                    <button class="ui-option-btn <?php echo $prefs['font_size'] === 'medium' ? 'active' : ''; ?>" onclick="changeFontSize('medium', this)">Medium</button>
-                    <button class="ui-option-btn <?php echo $prefs['font_size'] === 'large' ? 'active' : ''; ?>" onclick="changeFontSize('large', this)">Large</button>
+            <article class="ui-card setting-block">
+                <div class="setting-kicker"><span class="material-symbols-rounded" style="font-size:16px;">format_size</span>Text Size</div>
+                <div class="setting-row-left">
+                    <div class="setting-title">Reading scale</div>
+                    <div class="setting-desc">Choose your default content size for all screens.</div>
+                </div>
+                <div class="text-size-grid">
+                    <button class="ui-option-btn <?php echo $prefs['font_size'] === 'small' ? 'active' : ''; ?>" data-group="font-size" data-value="small" onclick="changeFontSize('small', this)">Small</button>
+                    <button class="ui-option-btn <?php echo $prefs['font_size'] === 'medium' ? 'active' : ''; ?>" data-group="font-size" data-value="medium" onclick="changeFontSize('medium', this)">Medium</button>
+                    <button class="ui-option-btn <?php echo $prefs['font_size'] === 'large' ? 'active' : ''; ?>" data-group="font-size" data-value="large" onclick="changeFontSize('large', this)">Large</button>
                 </div>
             </article>
 
-            <article class="ui-card">
-                <div class="ui-card-header"><h3>Theme Accent</h3></div>
-                <div class="ui-option-row">
-                    <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'blue' ? 'active' : ''; ?>" onclick="changeThemeColor('blue', this)">Blue</button>
-                    <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'green' ? 'active' : ''; ?>" onclick="changeThemeColor('green', this)">Green</button>
-                    <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'purple' ? 'active' : ''; ?>" onclick="changeThemeColor('purple', this)">Purple</button>
-                    <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'orange' ? 'active' : ''; ?>" onclick="changeThemeColor('orange', this)">Orange</button>
-                    <button class="ui-option-btn <?php echo $prefs['theme_color'] === 'cyan' ? 'active' : ''; ?>" onclick="changeThemeColor('cyan', this)">Cyan</button>
+            <article class="ui-card setting-block">
+                <div class="setting-kicker"><span class="material-symbols-rounded" style="font-size:16px;">colors</span>Theme Accent</div>
+                <div class="setting-row-left">
+                    <div class="setting-title">Accent color</div>
+                    <div class="setting-desc">This color is used for active states, focus, and highlights in the app.</div>
+                </div>
+                <div class="accent-grid">
+                    <button class="accent-swatch <?php echo $prefs['theme_color'] === 'blue' ? 'active' : ''; ?>" data-group="theme-color" data-value="blue" onclick="changeThemeColor('blue', this)">
+                        <span class="accent-dot" style="background:#3b82f6;"></span><span class="accent-label">Blue</span>
+                    </button>
+                    <button class="accent-swatch <?php echo $prefs['theme_color'] === 'green' ? 'active' : ''; ?>" data-group="theme-color" data-value="green" onclick="changeThemeColor('green', this)">
+                        <span class="accent-dot" style="background:#10b981;"></span><span class="accent-label">Green</span>
+                    </button>
+                    <button class="accent-swatch <?php echo $prefs['theme_color'] === 'purple' ? 'active' : ''; ?>" data-group="theme-color" data-value="purple" onclick="changeThemeColor('purple', this)">
+                        <span class="accent-dot" style="background:#8b5cf6;"></span><span class="accent-label">Purple</span>
+                    </button>
+                    <button class="accent-swatch <?php echo $prefs['theme_color'] === 'orange' ? 'active' : ''; ?>" data-group="theme-color" data-value="orange" onclick="changeThemeColor('orange', this)">
+                        <span class="accent-dot" style="background:#f97316;"></span><span class="accent-label">Orange</span>
+                    </button>
+                    <button class="accent-swatch <?php echo $prefs['theme_color'] === 'cyan' ? 'active' : ''; ?>" data-group="theme-color" data-value="cyan" onclick="changeThemeColor('cyan', this)">
+                        <span class="accent-dot" style="background:#06b6d4;"></span><span class="accent-label">Cyan</span>
+                    </button>
                 </div>
             </article>
 
-            <article class="ui-card">
-                <div class="ui-card-header">
-                    <h3>Delete All History</h3>
+            <article class="ui-card danger-zone setting-block">
+                <div class="danger-note"><span class="material-symbols-rounded" style="font-size:16px;">warning</span>Destructive action</div>
+                <div class="setting-row">
+                    <div class="setting-row-left">
+                        <div class="setting-title">Delete all history</div>
+                        <div class="setting-desc">Permanently removes all conversations and messages from your account.</div>
+                    </div>
                     <button class="ui-btn danger" onclick="deleteAllHistory()"><span class="material-symbols-rounded">delete_forever</span>Delete All</button>
                 </div>
-                <p class="ui-muted" style="font-size:13px;">This permanently removes all your conversations and messages.</p>
             </article>
         </section>
 
-        <section class="ui-card" style="margin-top:14px;">
+        <section class="ui-card conversation-card">
             <div class="ui-card-header"><h3>Your Conversations</h3></div>
+            <div class="conversation-meta"><?php echo count($conversations); ?> total conversation<?php echo count($conversations) === 1 ? '' : 's'; ?></div>
             <?php if (empty($conversations)): ?>
                 <div class="ui-empty">No conversations yet.</div>
             <?php else: ?>
@@ -420,6 +782,19 @@ closeDatabaseConnection($conn);
                         </tbody>
                     </table>
                 </div>
+                <div class="table-mobile">
+                    <?php foreach ($conversations as $conv): ?>
+                        <article class="table-mobile-item">
+                            <div class="table-mobile-title"><?php echo htmlspecialchars($conv['title']); ?></div>
+                            <div class="table-mobile-meta">Created: <?php echo date('M j, Y g:i A', strtotime($conv['created_at'])); ?></div>
+                            <div class="table-mobile-actions">
+                                <button class="ui-btn danger sm" onclick="deleteConversation(<?php echo (int)$conv['id']; ?>, '<?php echo htmlspecialchars($conv['title'], ENT_QUOTES); ?>')">
+                                    <span class="material-symbols-rounded">delete</span>Delete
+                                </button>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
             <?php endif; ?>
         </section>
 
@@ -433,8 +808,11 @@ const basePath = '<?php echo BASE_PATH; ?>';
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('overlay');
 const menuBtn = document.getElementById('menuBtn');
+const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
+const sidebarCollapseIcon = document.getElementById('sidebarCollapseIcon');
 const validFontSizes = ['small', 'medium', 'large'];
 const validThemeColors = ['blue', 'green', 'purple', 'orange', 'cyan'];
+const SIDEBAR_COLLAPSE_KEY = 'infobot_sidebar_collapsed';
 
 let currentDarkMode = <?php echo $prefs['dark_mode'] ? 'true' : 'false'; ?>;
 let currentFontSize = '<?php echo $prefs['font_size']; ?>';
@@ -462,6 +840,27 @@ function openSidebar() {
 function closeSidebar() {
     sidebar.classList.remove('open');
     overlay.classList.remove('open');
+}
+
+function setSidebarCollapsed(collapsed) {
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    if (sidebarCollapseIcon) {
+        sidebarCollapseIcon.textContent = collapsed ? 'left_panel_open' : 'left_panel_close';
+    }
+    if (sidebarCollapseBtn) {
+        sidebarCollapseBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+    }
+    localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? 'true' : 'false');
+}
+
+function restoreSidebarCollapsed() {
+    const saved = localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
+    setSidebarCollapsed(saved === 'true');
+}
+
+function toggleSidebarCollapsed() {
+    const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+    setSidebarCollapsed(!isCollapsed);
 }
 
 function applyTheme(darkMode, fontSize, themeColor) {
@@ -504,14 +903,11 @@ function syncSettingsControls() {
     const darkModeInput = document.getElementById('darkMode');
     if (darkModeInput) darkModeInput.checked = !!currentDarkMode;
 
-    document.querySelectorAll('.ui-option-btn').forEach((btn) => {
-        const label = btn.textContent.trim().toLowerCase();
-        if (validFontSizes.includes(label)) {
-            btn.classList.toggle('active', label === currentFontSize);
-        }
-        if (validThemeColors.includes(label)) {
-            btn.classList.toggle('active', label === currentThemeColor);
-        }
+    document.querySelectorAll('[data-group="font-size"]').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.value === currentFontSize);
+    });
+    document.querySelectorAll('[data-group="theme-color"]').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.value === currentThemeColor);
     });
 }
 
@@ -523,21 +919,16 @@ document.getElementById('darkMode').addEventListener('change', function() {
 
 function changeFontSize(size, btn) {
     currentFontSize = size;
-    document.querySelectorAll('.ui-option-btn').forEach(x => {
-        if (x.textContent.toLowerCase() === 'small' || x.textContent.toLowerCase() === 'medium' || x.textContent.toLowerCase() === 'large') x.classList.remove('active');
-    });
-    btn.classList.add('active');
+    document.querySelectorAll('[data-group="font-size"]').forEach((x) => x.classList.remove('active'));
+    if (btn) btn.classList.add('active');
     savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
     applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
 }
 
 function changeThemeColor(color, btn) {
     currentThemeColor = color;
-    document.querySelectorAll('.ui-option-btn').forEach(x => {
-        const t = x.textContent.toLowerCase();
-        if (['blue','green','purple','orange','cyan'].includes(t)) x.classList.remove('active');
-    });
-    btn.classList.add('active');
+    document.querySelectorAll('[data-group="theme-color"]').forEach((x) => x.classList.remove('active'));
+    if (btn) btn.classList.add('active');
     savePreferences(currentDarkMode, currentFontSize, currentThemeColor);
     applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
 }
@@ -589,11 +980,13 @@ function deleteConversation(convId, convTitle) {
 }
 
 if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+if (sidebarCollapseBtn) sidebarCollapseBtn.addEventListener('click', toggleSidebarCollapsed);
 if (overlay) overlay.addEventListener('click', closeSidebar);
 window.addEventListener('resize', () => {
     if (window.innerWidth > 960) closeSidebar();
 });
 
+restoreSidebarCollapsed();
 applyTheme(currentDarkMode, currentFontSize, currentThemeColor);
 syncSettingsControls();
 </script>

@@ -27,6 +27,13 @@ if (!$current_conversation_id) {
 }
 
 $messages = getConversationMessages($current_conversation_id);
+$current_conversation_title = 'Conversation';
+foreach ($conversations as $conv) {
+    if ((int)($conv['id'] ?? 0) === (int)$current_conversation_id) {
+        $current_conversation_title = (string)($conv['title'] ?? 'Conversation');
+        break;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,10 +129,36 @@ $messages = getConversationMessages($current_conversation_id);
             margin-bottom: 12px
         }
 
-        .brand-left {
-            display: flex;
+        .brand-actions {
+            display: inline-flex;
             align-items: center;
-            gap: 10px
+            gap: 8px;
+            width: 100%;
+            justify-content: space-between
+        }
+
+        .brand-collapse {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(148, 163, 184, .36);
+            border-radius: 999px;
+            background: rgba(15, 23, 42, .45);
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: .16s
+        }
+
+        .brand-collapse:hover {
+            background: rgba(30, 41, 59, .8);
+            border-color: rgba(148, 163, 184, .56);
+            transform: translateY(-1px)
+        }
+
+        .brand-collapse .material-symbols-rounded {
+            font-size: calc(18px * var(--font-scale, 1))
         }
 
         .brand-github {
@@ -247,7 +280,7 @@ $messages = getConversationMessages($current_conversation_id);
 
         .conv.active {
             background: rgba(30, 41, 59, .95);
-            border-color: rgba(99, 102, 241, .55)
+            border-color: color-mix(in srgb, var(--accent) 55%, transparent)
         }
 
         .conv.active::before {
@@ -309,9 +342,10 @@ $messages = getConversationMessages($current_conversation_id);
         .top {
             height: 62px;
             border-bottom: 1px solid var(--line);
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             align-items: center;
-            justify-content: space-between;
+            gap: 10px;
             padding: 0 20px;
             background: rgba(248, 250, 252, .85);
             backdrop-filter: blur(6px);
@@ -326,6 +360,21 @@ $messages = getConversationMessages($current_conversation_id);
             gap: 10px
         }
 
+        .top-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: calc(15px * var(--font-scale, 1));
+            font-weight: 700;
+            white-space: nowrap
+        }
+
+        .top-brand .material-symbols-rounded {
+            font-size: calc(18px * var(--font-scale, 1))
+        }
+
         .menu {
             width: 36px;
             height: 36px;
@@ -338,9 +387,24 @@ $messages = getConversationMessages($current_conversation_id);
             cursor: pointer
         }
 
-        .title {
-            font-size: calc(15px * var(--font-scale, 1));
-            font-weight: 600
+        .top-center {
+            justify-self: center;
+            min-width: 0;
+            max-width: min(62vw, 720px)
+        }
+
+        .conversation-title {
+            font-size: calc(14px * var(--font-scale, 1));
+            font-weight: 600;
+            color: var(--sub);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center
+        }
+
+        .top-right {
+            justify-self: end
         }
 
         .chip {
@@ -350,6 +414,50 @@ $messages = getConversationMessages($current_conversation_id);
             padding: 5px 10px;
             font-size: calc(12px * var(--font-scale, 1));
             color: var(--sub)
+        }
+
+        body.sidebar-collapsed .sidebar {
+            width: 76px;
+            min-width: 76px
+        }
+
+        body.sidebar-collapsed .main {
+            margin-left: 76px
+        }
+
+        body.sidebar-collapsed .side-top {
+            padding: 12px 8px
+        }
+
+        body.sidebar-collapsed .brand {
+            justify-content: center;
+            margin-bottom: 0
+        }
+
+        body.sidebar-collapsed .ghost,
+        body.sidebar-collapsed .conv-list {
+            display: none
+        }
+
+        body.sidebar-collapsed .brand-actions .brand-github {
+            display: none
+        }
+
+        body.sidebar-collapsed .brand-actions {
+            width: auto
+        }
+
+        body.sidebar-collapsed .side-foot {
+            padding: 10px 8px
+        }
+
+        body.sidebar-collapsed .side-link {
+            justify-content: center;
+            padding: 10px
+        }
+
+        body.sidebar-collapsed .side-link span:last-child {
+            display: none
         }
 
         .scroll {
@@ -740,6 +848,14 @@ $messages = getConversationMessages($current_conversation_id);
                 display: flex
             }
 
+            .brand-collapse {
+                display: none
+            }
+
+            .top-brand .brand-word {
+                display: none
+            }
+
             .main {
                 margin-left: 0
             }
@@ -758,8 +874,26 @@ $messages = getConversationMessages($current_conversation_id);
                 transform: translateX(0)
             }
 
+            body.sidebar-collapsed .sidebar {
+                width: var(--sidew);
+                min-width: var(--sidew)
+            }
+
+            body.sidebar-collapsed .main {
+                margin-left: 0
+            }
+
             .cards {
                 grid-template-columns: 1fr
+            }
+
+            .top {
+                grid-template-columns: auto minmax(0, 1fr) auto;
+                padding: 0 12px
+            }
+
+            .top-center {
+                max-width: 56vw
             }
         }
 
@@ -874,9 +1008,17 @@ $messages = getConversationMessages($current_conversation_id);
             <header class="top">
                 <div class="top-left">
                     <button class="menu" id="menuBtn" type="button" aria-label="Open conversations"><span class="material-symbols-rounded">menu</span></button>
-                    <div class="title">Welcome, <?php echo htmlspecialchars($username); ?></div>
+                    <a class="top-brand" href="<?php echo BASE_PATH; ?>pages/chat.php">
+                        <span class="material-symbols-rounded">smart_toy</span>
+                        <span class="brand-word">InfoBot</span>
+                    </a>
                 </div>
-                <div class="chip" id="modelBadge">Model: API (Groq)</div>
+                <div class="top-center">
+                    <div class="conversation-title"><?php echo htmlspecialchars($current_conversation_title); ?></div>
+                </div>
+                <div class="top-right">
+                    <div class="chip" id="modelBadge">Model: API (Groq)</div>
+                </div>
             </header>
 
             <section class="scroll" id="chatScroll">
@@ -956,6 +1098,8 @@ $messages = getConversationMessages($current_conversation_id);
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
         const menuBtn = document.getElementById('menuBtn');
+        const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
+        const sidebarCollapseIcon = document.getElementById('sidebarCollapseIcon');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
         const emptyState = document.getElementById('emptyState');
@@ -968,7 +1112,9 @@ $messages = getConversationMessages($current_conversation_id);
         const providerIcon = document.getElementById('providerIcon');
         const providerOptions = document.querySelectorAll('.provider-option');
         const DRAFT_KEY = `infobot_draft_${conversationId}`;
+        const QUICK_PROMPT_KEY = 'infobot_quick_prompt';
         const PROVIDER_KEY = 'infobot_provider';
+        const SIDEBAR_COLLAPSE_KEY = 'infobot_sidebar_collapsed';
         const PROVIDER_META = {
             api: {
                 short: 'API',
@@ -992,7 +1138,30 @@ $messages = getConversationMessages($current_conversation_id);
             sidebar.classList.remove('open');
             overlay.classList.remove('open')
         }
+
+        function setSidebarCollapsed(collapsed) {
+            document.body.classList.toggle('sidebar-collapsed', collapsed);
+            if (sidebarCollapseIcon) {
+                sidebarCollapseIcon.textContent = collapsed ? 'left_panel_open' : 'left_panel_close';
+            }
+            if (sidebarCollapseBtn) {
+                sidebarCollapseBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            }
+            localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? 'true' : 'false');
+        }
+
+        function restoreSidebarCollapsed() {
+            const saved = localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
+            setSidebarCollapsed(saved === 'true');
+        }
+
+        function toggleSidebarCollapsed() {
+            const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+            setSidebarCollapsed(!isCollapsed);
+        }
+
         if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+        if (sidebarCollapseBtn) sidebarCollapseBtn.addEventListener('click', toggleSidebarCollapsed);
         if (overlay) overlay.addEventListener('click', closeSidebar);
         window.addEventListener('resize', () => {
             if (window.innerWidth > 960) closeSidebar();
@@ -1045,6 +1214,15 @@ $messages = getConversationMessages($current_conversation_id);
             });
 
             localStorage.setItem(PROVIDER_KEY, nextProvider);
+            try {
+                window.dispatchEvent(new CustomEvent('infobot:provider-changed', {
+                    detail: {
+                        provider: nextProvider
+                    }
+                }));
+            } catch (e) {
+                // Ignore dispatch failures in older environments.
+            }
         }
 
         function toggleProviderMenu(forceOpen) {
@@ -1202,6 +1380,17 @@ $messages = getConversationMessages($current_conversation_id);
             }
         }
 
+        function restoreQuickPrompt() {
+            const prompt = localStorage.getItem(QUICK_PROMPT_KEY);
+            if (!prompt) return;
+            if (messageInput.value.trim()) return;
+            messageInput.value = prompt;
+            autoResize();
+            saveDraft();
+            localStorage.removeItem(QUICK_PROMPT_KEY);
+            messageInput.focus();
+        }
+
         function insertStarterPrompt(text) {
             messageInput.value = text;
             autoResize();
@@ -1294,8 +1483,10 @@ $messages = getConversationMessages($current_conversation_id);
             }
         });
         window.addEventListener('beforeunload', saveDraft);
+        restoreSidebarCollapsed();
         restoreProvider();
         restoreDraft();
+        restoreQuickPrompt();
         autoResize();
         ensureBottom();
         document.querySelectorAll('.msg.assistant .bubble').forEach((bubble) => {
