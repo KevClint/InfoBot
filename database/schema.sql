@@ -108,13 +108,34 @@ CREATE TABLE IF NOT EXISTS favorite_responses (
 -- ============================================
 -- Password: admin123
 -- Always change this in production!
-INSERT INTO users (username, email, password) VALUES 
-('admin', 'admin@chatbot.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+INSERT INTO users (username, email, password, role)
+SELECT 'admin', 'admin@chatbot.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'
+WHERE NOT EXISTS (
+    SELECT 1 FROM users WHERE username = 'admin' OR email = 'admin@chatbot.com'
+);
 
 -- ============================================
 -- INSERT SAMPLE KNOWLEDGE BASE ENTRIES
 -- ============================================
-INSERT INTO knowledge_base (question, answer, category, created_by) VALUES
-('What is this chatbot?', 'I am a helpful AI assistant powered by Groq API. I can answer questions, provide information, and help you with various tasks!', 'General', 1),
-('How do I use this chatbot?', 'Simply type your question or message in the chat box below and press Enter or click Send. I will respond as quickly as possible!', 'General', 1),
-('What can you help me with?', 'I can help with general questions, explanations, homework assistance, creative writing, coding help, and much more. Feel free to ask me anything!', 'General', 1);
+INSERT INTO knowledge_base (question, answer, category, created_by)
+SELECT q.question, q.answer, q.category, u.id
+FROM (
+    SELECT 'What is this chatbot?' AS question,
+           'I am a helpful AI assistant powered by Groq API. I can answer questions, provide information, and help you with various tasks!' AS answer,
+           'General' AS category
+    UNION ALL
+    SELECT 'How do I use this chatbot?',
+           'Simply type your question or message in the chat box below and press Enter or click Send. I will respond as quickly as possible!',
+           'General'
+    UNION ALL
+    SELECT 'What can you help me with?',
+           'I can help with general questions, explanations, homework assistance, creative writing, coding help, and much more. Feel free to ask me anything!',
+           'General'
+) AS q
+INNER JOIN users u ON u.username = 'admin'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM knowledge_base kb
+    WHERE kb.question = q.question
+      AND kb.created_by = u.id
+);
